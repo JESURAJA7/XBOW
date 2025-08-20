@@ -1,0 +1,4 @@
+[build]
+  base = "xbow"
+  command = "npm run build"
+  publish = "xbow/dist"
