@@ -228,8 +228,10 @@ export const LoadProviderDashboard: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex items-center space-x-6 text-sm text-slate-600">
-                      <span>Vehicle: {load.vehicleRequirement.size}ft {load.vehicleRequirement.type}</span>
-                      <span>Materials: {load.materials.length}</span>
+                    <span>Vehicle: {load.vehicleRequirement.size}ft {load.vehicleRequirement.vehicleType}</span>
+
+                     <span>Materials: {load.materials?.length ?? 0}</span>
+
                       <span>Posted: {new Date(load.createdAt).toLocaleDateString()}</span>
                     </div>
                   </div>

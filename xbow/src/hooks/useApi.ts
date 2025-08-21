@@ -60,18 +60,20 @@ const mockLoads: Load[] = [
       pincode: '560001',
       state: 'Karnataka',
       district: 'Bangalore Urban',
-      place: 'Bangalore'
+      place: 'Bangalore',
+       coordinates: { latitude: 0, longitude: 0 },
     },
     unloadingLocation: {
       pincode: '400001',
       state: 'Maharashtra',
       district: 'Mumbai',
-      place: 'Mumbai'
+      place: 'Mumbai',
+      coordinates: { latitude: 0, longitude: 0 }
     },
     vehicleRequirement: {
       size: 14,
-      type: '10-wheel',
-      trailer: 'Semi-Lowbed'
+      vehicleType: '10-wheel',
+      trailerType: 'Semi-Lowbed'
     },
     materials: [
       {
@@ -85,9 +87,9 @@ const mockLoads: Load[] = [
         photos: []
       }
     ],
-    loadingTime: '2025-01-10',
+    loadingDate: '2025-01-10',
+    loadingTime: '10:00',
     paymentTerms: 'COD',
-    isXBOWResponsible: true,
     status: 'posted',
     createdAt: '2024-12-28',
     commissionApplicable: true,
@@ -97,24 +99,36 @@ const mockLoads: Load[] = [
 
 const mockVehicles: Vehicle[] = [
   {
-    id: '1',
-    ownerId: '2',
-    ownerName: 'XYZ Transport',
-    vehicleType: '14 ft',
-    vehicleNumber: 'KA01AB1234',
-    passingLimit: 15,
-    availability: 'today',
-    isOpen: false,
-    tarpaulin: 'two',
-    preferredOperatingArea: {
-      state: 'Karnataka',
-      district: 'Bangalore Urban',
-      place: 'Bangalore'
-    },
-    photos: [],
-    status: 'available',
-    createdAt: '2024-12-20',
-    isApproved: false
+  id: '1',
+  ownerId: '2',
+  ownerName: 'XYZ Transport',
+  vehicleType: '14 ft',
+  vehicleNumber: 'KA01AB1234',
+  passingLimit: 15,
+  vehicleSize: 14, // ✅ added
+  vehicleWeight: 8000, // ✅ added (in kg for example)
+  availability: 'today',
+  isOpen: false,
+  tarpaulin: 'two',
+  preferredOperatingArea: {
+    state: 'Karnataka',
+    district: 'Bangalore Urban',
+    place: 'Bangalore'
+  },
+  dimensions: {
+    length: 14, // ✅ added
+    breadth: 6  // ✅ added
+  },
+  trailerType: 'Flatbed', // ✅ added
+  photos: [], // ✅ still valid
+  status: 'available',
+  rating: 4.5, // optional
+  totalTrips: 120, // optional
+  bidPrice: 1500, // optional (example: INR)
+  publicId: 'veh_123abc', // optional (e.g. Cloudinary or DB ID)
+  isApproved: false,
+  createdAt: '2024-12-20',
+  updatedAt: '2025-08-20' // optional
   }
 ];
 

@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['load_provider', 'vehicle_owner', 'admin'],
+    enum: ['load_provider', 'vehicle_owner', 'admin','super_admin'],
     required: true
   },
   isApproved: {

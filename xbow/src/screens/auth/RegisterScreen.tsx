@@ -13,7 +13,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/common/CustomButton';
 import { Input } from '../../components/common/CustomInput';
 import toast from 'react-hot-toast';
-import logo from '../../assets/logo.png';
+import logo from '../../assets/XBow-Logo.png';
 
 export const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({

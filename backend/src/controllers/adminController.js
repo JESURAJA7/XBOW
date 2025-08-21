@@ -5,6 +5,8 @@ import POD from '../models/POD.js';
 import Payment from '../models/Payment.js';
 import Commission from '../models/Commission.js';
 import AdminSettings from '../models/AdminSettings.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
 // @desc    Get dashboard statistics
 // @route   GET /api/admin/dashboard
@@ -803,6 +805,238 @@ export const toggleUserAccess = async (req, res) => {
   }
 };
 
+// @desc    Register admin user
+// @route   POST /api/admin/register
+// @access  Private (Super Admin only)
+export const registerAdmin = async (req, res) => {
+  try {
+    const { name, email, password, phone, role } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email'
+      });
+    }
+
+    // Validate role - only allow admin roles
+    const allowedRoles = ['admin', 'super_admin'];
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid role. Allowed roles: admin, super_admin'
+      });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create admin user
+    const adminUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      phone,
+      role,
+      isApproved: true, // Admin users are auto-approved
+      isActive: true,
+      subscriptionStatus: 'active' // Admin users don't need subscription
+    });
+
+    // Remove password from response
+    const userResponse = {
+      _id: adminUser._id,
+      name: adminUser.name,
+      email: adminUser.email,
+      phone: adminUser.phone,
+      role: adminUser.role,
+      isActive: adminUser.isActive,
+      createdAt: adminUser.createdAt
+    };
+
+    res.status(201).json({
+      success: true,
+      message: 'Admin user created successfully',
+      data: userResponse
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Login admin user
+// @route   POST /api/admin/login
+// @access  Public
+export const loginAdmin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Check if user is an admin
+    if (!['admin', 'super_admin'].includes(user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Admin privileges required.'
+      });
+    }
+
+    // Check if user is approved and active
+    if (!user.isApproved || !user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: 'Account is not approved or is deactivated'
+      });
+    }
+
+    // Check password
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Create token
+    const token = jwt.sign(
+      { 
+        id: user._id, 
+        role: user.role 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRE || '7d' }
+    );
+
+    // Remove password from response
+    const userResponse = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      isActive: user.isActive,
+      createdAt: user.createdAt
+    };
+
+    res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      token,
+      data: userResponse
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Get current admin profile
+// @route   GET /api/admin/profile
+// @access  Private (Admin only)
+export const getAdminProfile = async (req, res) => {
+  try {
+    const admin = await User.findById(req.user.id).select('-password');
+    
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: admin
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Update admin profile
+// @route   PUT /api/admin/profile
+// @access  Private (Admin only)
+export const updateAdminProfile = async (req, res) => {
+  try {
+    const { name, phone } = req.body;
+    
+    const updatedAdmin = await User.findByIdAndUpdate(
+      req.user.id,
+      { name, phone },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: updatedAdmin
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Change admin password
+// @route   PUT /api/admin/change-password
+// @access  Private (Admin only)
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    // Get user with password
+    const admin = await User.findById(req.user.id).select('+password');
+    
+    // Check current password
+    const isMatch = await bcrypt.compare(currentPassword, admin.password);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update password
+    admin.password = hashedPassword;
+    await admin.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 export default {
   getDashboardStats,
   getUsers,
@@ -821,5 +1055,10 @@ export default {
   getPayments,
   getCommissionReports,
   generateReport,
-  toggleUserAccess
+  toggleUserAccess,
+  registerAdmin,
+  loginAdmin,
+  getAdminProfile,
+  updateAdminProfile,
+  changePassword
 };

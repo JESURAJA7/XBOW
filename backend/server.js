@@ -17,6 +17,7 @@ import podRoutes from './src/routes/pods.js';
 import profileRoutes from './src/routes/profile.js';
 import subscriptionRoutes from './src/routes/subscription.js';
 
+
 const router = express.Router();
 
 dotenv.config();
@@ -65,6 +66,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/pods', podRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/subscription', subscriptionRoutes);
+
 
 // Health check route
 app.get('/api/health', (req, res) => {

@@ -5,5 +5,10 @@ export default defineConfig({
   plugins: [react()],
   css: {
     postcss: './postcss.config.js'
+  },
+  build: {
+    rollupOptions: {
+      external: ['@rollup/rollup-linux-x64-gnu']
+    }
   }
 })

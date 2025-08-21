@@ -2,7 +2,8 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -44,8 +45,8 @@ api.interceptors.response.use(
 );
 
 export const authAPI = {
-  register: (userData: any) => api.post('/auth/register', userData),
-  login: (credentials: any) => api.post('/auth/login', credentials),
+  register: (userData: any) => api.post(`${API_BASE_URL}/auth/register`, userData),
+  login: (credentials: any) => api.post(`${API_BASE_URL}/auth/login`, credentials),
   getProfile: () => api.get('/auth/me'),
 };
 

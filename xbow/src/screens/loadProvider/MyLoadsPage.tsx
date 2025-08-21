@@ -63,7 +63,7 @@ export const MyLoadsPage: React.FC = () => {
       filtered = filtered.filter(load =>
         load.loadingLocation.place.toLowerCase().includes(searchTerm.toLowerCase()) ||
         load.unloadingLocation.place.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        load.materials.some(material => 
+        load.materials?.some(material => 
           material.name.toLowerCase().includes(searchTerm.toLowerCase())
         )
       );
@@ -310,7 +310,7 @@ export const MyLoadsPage: React.FC = () => {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-slate-600 text-sm">Materials:</span>
-                        <span className="font-medium text-slate-900">{load.materials.length} item(s)</span>
+                        <span className="font-medium text-slate-900">{load.materials?.length} item(s)</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-slate-600 text-sm">Loading Date:</span>
@@ -465,9 +465,9 @@ export const MyLoadsPage: React.FC = () => {
 
               {/* Materials */}
               <div>
-                <h3 className="font-semibold text-slate-900 mb-4">Materials ({selectedLoad.materials.length})</h3>
+                <h3 className="font-semibold text-slate-900 mb-4">Materials ({selectedLoad.materials?.length})</h3>
                 <div className="space-y-4">
-                  {selectedLoad.materials.map((material, index) => (
+                  {selectedLoad.materials?.map((material, index) => (
                     <div key={material.id} className="border border-slate-200 rounded-xl p-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>

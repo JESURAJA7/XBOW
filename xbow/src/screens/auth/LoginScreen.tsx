@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/common/CustomButton';
 import { Input } from '../../components/common/CustomInput';
 import toast from 'react-hot-toast';
-import logo from '../../assets/logo.png'
+import logo from '../../assets/XBow-Logo.png';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -32,6 +32,21 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  // Function to handle demo login
+  const handleDemoLogin = () => {
+    setEmail('xbow@gmail.com');
+    setPassword('admin@4345');
+    
+    // Submit the form programmatically after a small delay
+    setTimeout(() => {
+      const form = document.querySelector('form');
+      if (form) {
+        const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+        form.dispatchEvent(submitEvent);
+      }
+    }, 100);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-emerald-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -42,7 +57,7 @@ export const LoginPage: React.FC = () => {
           className="text-center"
         >
           <motion.div
-            className="mx-auto   flex items-center justify-center shadow-xl"
+            className="mx-auto flex items-center justify-center shadow-xl"
             whileHover={{ scale: 1.05, rotate: 5 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
@@ -94,6 +109,18 @@ export const LoginPage: React.FC = () => {
             </Button>
           </form>
 
+          <div className="mt-6">
+            <Button
+              onClick={handleDemoLogin}
+              fullWidth
+              variant="outline"
+              size="lg"
+              className="bg-blue-50 text-blue-600 hover:bg-blue-100"
+            >
+              Use Demo Account
+            </Button>
+          </div>
+
           <div className="mt-8 text-center">
             <p className="text-slate-600">
               Don't have an account?{' '}
@@ -105,8 +132,6 @@ export const LoginPage: React.FC = () => {
               </Link>
             </p>
           </div>
-
-        
         </motion.div>
       </div>
     </div>

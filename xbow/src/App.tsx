@@ -18,6 +18,7 @@ import { MyVehiclesPage } from './screens/vehicleOwner/MyVehiclesPage';
 import { PODManagementPage } from './screens/POD/PODManagementPage';
 import { BiddingInfo } from './screens/Bidding/BiddingInfo';
 import { BiddingPage } from './screens/Bidding/BiddingPage';
+import { AdminApp } from './Admin/components/AdminApp';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -174,6 +175,16 @@ const AppContent: React.FC = () => {
           }
         />
 
+           <Route 
+          path="/pods" 
+          element={
+            <ProtectedRoute>
+              <Navbar />
+              <PODManagementPage />
+            </ProtectedRoute>
+          } 
+        />
+
         <Route
           path="/bidding-info"
           element={
@@ -194,6 +205,14 @@ const AppContent: React.FC = () => {
           }
         />
 
+
+        {/* Default redirect */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    
+
+       {/* Admin Routes */}
+        <Route path="/admin/*" element={<AdminApp />} />
 
         {/* Default redirect */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
