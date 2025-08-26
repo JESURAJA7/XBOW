@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { TruckIcon, EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { 
+  TruckIcon, 
+  EnvelopeIcon, 
+  LockClosedIcon, 
+  XMarkIcon,
+  UserIcon,
+  BuildingStorefrontIcon,
+  UserGroupIcon
+} from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/common/CustomButton';
 import { Input } from '../../components/common/CustomInput';
@@ -12,6 +20,7 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showDemoModal, setShowDemoModal] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -32,10 +41,28 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  // Function to handle demo login
-  const handleDemoLogin = () => {
-    setEmail('xbow@gmail.com');
-    setPassword('admin@4345');
+  // Function to handle demo login with specific role
+  const handleDemoLogin = (role: string) => {
+    let demoEmail = '';
+    let demoPassword = 'admin@4345';
+    
+    switch(role) {
+      case 'load_provider':
+        demoEmail = 'xbow@gmail.com';
+        break;
+      case 'vehicle_owner':
+        demoEmail = 'owner@gmail.com';
+        break;
+      case 'parcel&courier':
+        demoEmail = 'xbow@gmail.com';
+        break;
+      default:
+        demoEmail = 'xbow@gmail.com';
+    }
+    
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    setShowDemoModal(false);
     
     // Submit the form programmatically after a small delay
     setTimeout(() => {
@@ -46,6 +73,28 @@ export const LoginPage: React.FC = () => {
       }
     }, 100);
   };
+
+  // Demo role options
+  const demoRoles = [
+    {
+      id: 'load_provider',
+      title: 'Load Provider',
+      description: 'Post loads and find vehicles for transportation',
+      icon: <TruckIcon className="w-8 h-8" />
+    },
+    {
+      id: 'vehicle_owner',
+      title: 'Vehicle Owner',
+      description: 'Find loads for your available vehicles',
+      icon: <UserIcon className="w-8 h-8" />
+    },
+    {
+      id: 'parcel&courier',
+      title: 'Parcel & Courier',
+      description: 'Manage parcel deliveries and courier services',
+      icon: <BuildingStorefrontIcon className="w-8 h-8" />
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-emerald-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
@@ -111,7 +160,7 @@ export const LoginPage: React.FC = () => {
 
           <div className="mt-6">
             <Button
-              onClick={handleDemoLogin}
+              onClick={() => setShowDemoModal(true)}
               fullWidth
               variant="outline"
               size="lg"
@@ -132,8 +181,81 @@ export const LoginPage: React.FC = () => {
               </Link>
             </p>
           </div>
+
+          {/* Admin Login Link */}
+          <div className="mt-4 text-center">
+            <p className="text-sm text-slate-500">
+              Are you an admin?{' '}
+              <Link
+                to="/admin"
+                className="font-semibold text-purple-600 hover:text-purple-700 transition-colors"
+              >
+                Admin Login
+              </Link>
+            </p>
+          </div>
         </motion.div>
       </div>
+
+      {/* Demo Account Selection Modal */}
+      <AnimatePresence>
+        {showDemoModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+            onClick={() => setShowDemoModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+              className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-slate-800">Select Demo Role</h3>
+                <button
+                  onClick={() => setShowDemoModal(false)}
+                  className="text-slate-500 hover:text-slate-700 transition-colors"
+                >
+                  <XMarkIcon className="w-6 h-6" />
+                </button>
+              </div>
+
+              <p className="text-slate-600 mb-6">
+                Choose a demo role to experience XBOW from different perspectives
+              </p>
+
+              <div className="space-y-4">
+                {demoRoles.map((role) => (
+                  <motion.button
+                    key={role.id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full flex items-start p-4 rounded-xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all text-left"
+                    onClick={() => handleDemoLogin(role.id)}
+                  >
+                    <div className="bg-blue-100 p-3 rounded-lg text-blue-600 mr-4">
+                      {role.icon}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-slate-800">{role.title}</h4>
+                      <p className="text-sm text-slate-600 mt-1">{role.description}</p>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+
+              <div className="mt-6 text-center text-sm text-slate-500">
+                <p>All demo accounts use the same password: admin@4345</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

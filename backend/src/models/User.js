@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
   },
   whatsappNumber: {
     type: String,
-    required: [true, 'WhatsApp number is required'],
+    required: [false, 'WhatsApp number is required'],
     match: [/^[6-9]\d{9}$/, 'Please enter a valid Indian WhatsApp number']
   },
   password: {
@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['load_provider', 'vehicle_owner', 'admin','super_admin'],
+    enum: ['load_provider', 'vehicle_owner', 'admin','super_admin','parcel&courier'],
     required: true
   },
   isApproved: {

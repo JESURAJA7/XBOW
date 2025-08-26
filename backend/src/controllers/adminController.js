@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import Admin from '../models/Admin.js';
 import Load from '../models/Load.js';
 import Vehicle from '../models/Vehicle.js';
 import POD from '../models/POD.js';
@@ -811,9 +812,18 @@ export const toggleUserAccess = async (req, res) => {
 export const registerAdmin = async (req, res) => {
   try {
     const { name, email, password, phone, role } = req.body;
+    console.log("Register Admin:", { name, email, phone, role });
+
+    // Validate password
+    if (!password || password.trim().length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password is required and must be at least 6 characters"
+      });
+    }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await Admin.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -821,7 +831,7 @@ export const registerAdmin = async (req, res) => {
       });
     }
 
-    // Validate role - only allow admin roles
+    // Validate role
     const allowedRoles = ['admin', 'super_admin'];
     if (!allowedRoles.includes(role)) {
       return res.status(400).json({
@@ -833,20 +843,21 @@ export const registerAdmin = async (req, res) => {
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+    console.log("Hashed password:", hashedPassword);
 
     // Create admin user
-    const adminUser = await User.create({
+    const adminUser = await Admin.create({
       name,
       email,
       password: hashedPassword,
       phone,
       role,
-      isApproved: true, // Admin users are auto-approved
+      isApproved: true,
       isActive: true,
-      subscriptionStatus: 'active' // Admin users don't need subscription
+      subscriptionStatus: 'active'
     });
 
-    // Remove password from response
+    // Return response (without password)
     const userResponse = {
       _id: adminUser._id,
       name: adminUser.name,
@@ -863,6 +874,7 @@ export const registerAdmin = async (req, res) => {
       data: userResponse
     });
   } catch (error) {
+    console.error("Register Admin Error:", error);
     res.status(400).json({
       success: false,
       message: error.message
@@ -870,27 +882,47 @@ export const registerAdmin = async (req, res) => {
   }
 };
 
+
 // @desc    Login admin user
 // @route   POST /api/admin/login
 // @access  Public
 export const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log("Login Admin Request:", { email, passwordReceived: !!password });
+
+    // Validate request body
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required"
+      });
+    }
 
     // Check if user exists
-    const user = await User.findOne({ email }).select('+password');
+    const user = await Admin.findOne({ email }).select("+password");
+
+   // console.log("Found user:", user);
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: "Invalid credentials"
+      });
+    }
+
+    // Ensure password field exists in DB
+    if (!user.password) {
+      return res.status(500).json({
+        success: false,
+        message: "User password not set in database"
       });
     }
 
     // Check if user is an admin
-    if (!['admin', 'super_admin'].includes(user.role)) {
+    if (!["admin", "super_admin"].includes(user.role)) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Admin privileges required.'
+        message: "Access denied. Admin privileges required."
       });
     }
 
@@ -898,30 +930,31 @@ export const loginAdmin = async (req, res) => {
     if (!user.isApproved || !user.isActive) {
       return res.status(403).json({
         success: false,
-        message: 'Account is not approved or is deactivated'
+        message: "Account is not approved or is deactivated"
       });
     }
 
-    // Check password
+    // Compare passwords
     const isPasswordMatch = await bcrypt.compare(password, user.password);
+    console.log("Password match:", isPasswordMatch);
     if (!isPasswordMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: "Invalid credentials"
       });
     }
 
     // Create token
     const token = jwt.sign(
-      { 
-        id: user._id, 
-        role: user.role 
+      {
+        id: user._id,
+        role: user.role
       },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRE || '7d' }
+      process.env.JWT_SECRET || "defaultsecret",
+      { expiresIn: process.env.JWT_EXPIRE || "7d" }
     );
 
-    // Remove password from response
+    // Response without password
     const userResponse = {
       _id: user._id,
       name: user.name,
@@ -934,17 +967,19 @@ export const loginAdmin = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Login successful',
+      message: "Login successful",
       token,
       data: userResponse
     });
   } catch (error) {
-    res.status(400).json({
+    console.error("Login Admin Error:", error);
+    res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || "Server error"
     });
   }
 };
+
 
 // @desc    Get current admin profile
 // @route   GET /api/admin/profile

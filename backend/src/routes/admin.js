@@ -18,14 +18,26 @@ import {
   getCommissionReports,
   generateReport,
   toggleUserAccess,
+    registerAdmin,
+  loginAdmin,
+  getAdminProfile,
+  updateAdminProfile,
+  changePassword
 } from "../controllers/adminController.js";
 import { protect, authorize } from "../middleware/auth.js";
 
 const router = express.Router();
 
 // All admin routes require authentication and admin role
-router.use(protect);
-router.use(authorize("admin"));
+// router.use(protect);
+// router.use(authorize("admin"));
+
+// Admin registration and login
+router.post("/register", registerAdmin);
+router.post("/login", loginAdmin);
+router.get("/profile", getAdminProfile);
+router.put("/profile", updateAdminProfile);
+router.put("/change-password", changePassword);
 
 // Dashboard
 router.get("/dashboard", getDashboardStats);

@@ -15,7 +15,7 @@ import { SubscriptionPage } from './screens/subscription/SubscriptionPage';
 import { FindLoadsPage } from './screens/vehicleOwner/FindLoadsPage';
 import { MyLoadsPage } from './screens/loadProvider/MyLoadsPage';
 import { MyVehiclesPage } from './screens/vehicleOwner/MyVehiclesPage';
-import { PODManagementPage } from './screens/POD/PODManagementPage';
+import { PODManagementPage } from './Admin/components/PODManagementPage';
 import { BiddingInfo } from './screens/Bidding/BiddingInfo';
 import { BiddingPage } from './screens/Bidding/BiddingPage';
 import { AdminApp } from './Admin/components/AdminApp';

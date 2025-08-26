@@ -53,7 +53,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab, o
       <motion.div
         initial={{ x: -300 }}
         animate={{ x: 0 }}
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:z-auto ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -64,6 +64,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab, o
             </div>
             <span className="text-xl font-bold text-white">XBOW Admin</span>
           </div>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="ml-auto p-1 text-slate-400 hover:text-white lg:hidden"
+          >
+            <XMarkIcon className="h-5 w-5" />
+          </button>
         </div>
 
         <nav className="mt-8 px-4">
@@ -125,7 +131,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab, o
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
         {/* Top Header */}
         <header className="bg-white shadow-sm border-b border-slate-200 lg:hidden">
           <div className="flex items-center justify-between px-4 py-3">
@@ -141,7 +147,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab, o
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto p-4 lg:p-6">
           {children}
         </main>
       </div>
