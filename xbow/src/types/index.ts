@@ -23,27 +23,25 @@ export interface Dimensions {
 
 // Photo interfaces
 export interface MaterialPhoto {
-  type: string; 
-  file?: File | null;
-  preview?: string | null;
-  url?: string;
-  id?: string;
-  uploadedAt?: string;
+  publicId: string;
+  url: string;
+  _id: string;
 }
 
 export interface VehiclePhoto {
   type: string;
-  url: string;
-  id?: string;
-  publicId?: string; 
-  uploadedAt?: string;
+  file: File | null;
+  preview: string;
+  cloudinaryUrl?: string;
+  publicId?: string;
+  uploading?: boolean;
 }
 
 // Material interface
 export interface Material {
   id?: string;
   name: string;
-  packType:string;
+  packType: string;
   totalCount: number;
   dimensions: Dimensions;
   singleWeight: number;
@@ -81,11 +79,12 @@ export interface User {
 
 // Load interface
 export interface Load {
-  id: string;
+  _id: string; 
+  loadId: string; // Unique load identifier (could be same as _id)
   loadProviderId: string;
   loadProviderName: string;
-  title?: string; // Make optional if not always present
-  description?: string; // Make optional if not always present
+  title?: string;
+  description?: string;
   loadingLocation: {
     pincode: string;
     state: string;
@@ -95,7 +94,6 @@ export interface Load {
       latitude: number;
       longitude: number;
     };
-    // Add other location properties if needed
     address?: string;
     city?: string;
     zipCode?: string;
@@ -109,70 +107,107 @@ export interface Load {
       latitude: number;
       longitude: number;
     };
-    // Add other location properties if needed
     address?: string;
     city?: string;
     zipCode?: string;
   };
-  pickupDate?: string; // Make optional if not always present
-  deliveryDate?: string; // Make optional if not always present
-  weight?: string; // Make optional if not always present
-  dimensions?: { // Make optional if not always present
+  pickupDate?: string;
+  deliveryDate?: string;
+  photos: MaterialPhoto[];
+  weight?: string;
+  dimensions?: {
     length: string;
     width: string;
     height: string;
   };
-  specialRequirements?: string; // Make optional
-  rate?: string; // Make optional
+  specialRequirements?: string;
+  rate?: string;
   vehicleRequirement: {
     vehicleType: string;
     size: number;
     trailerType: string;
   };
-  materials?: Material[]; // Make optional
+  materials?: Material[];
   loadingDate: string;
   loadingTime: string;
   paymentTerms: string;
-  withXBowSupport?: boolean; // Make optional
-  status: 'active' | 'inactive' | 'completed' | 'cancelled' | string; // Allow other strings
+  withXBowSupport?: boolean;
+  status: string;
   assignedVehicleId?: string;
-  commissionApplicable?: boolean; // Make optional
-  commissionAmount?: number; // Make optional
+  commissionApplicable?: boolean;
+  commissionAmount?: number;
   createdAt: string;
 }
 
+// Helper type to distinguish between saved and unsaved loads
+export interface SavedLoad extends Load {
+  _id: string; // This will be a valid MongoDB ObjectId (24-character hex string)
+}
+
+export interface UnsavedLoad extends Omit<Load, '_id'> {
+  _id: 'new-load-id'; // Specific placeholder for unsaved loads
+}
+
+// Type guard to check if a load is saved (has valid ObjectId)
+export const isSavedLoad = (load: Load): load is SavedLoad => {
+  return /^[0-9a-fA-F]{24}$/.test(load._id);
+};
+
+// Type guard to check if a load is unsaved
+export const isUnsavedLoad = (load: Load): load is UnsavedLoad => {
+  return load._id === 'new-load-id';
+};
 // Vehicle interface
 export interface Vehicle {
+  _id: string;
   id: string;
   ownerId: string;
   ownerName: string;
   vehicleType: string;
   vehicleNumber: string;
-  passingLimit: number;
   vehicleSize: number;
   vehicleWeight: number;
-  availability: string;
-  isOpen: boolean;
-  tarpaulin: string;
-  preferredOperatingArea: {
-    state: string;
-    district: string;
-    place: string;
-  };
+  passingLimit: number;
   dimensions: {
     length: number;
-    breadth: number;
+    width: number;
+    height: number;
   };
-    trailerType: string;
-  photos: VehiclePhoto[];
+  preferredOperatingArea: {
+    place: string;
+    state: string;
+    district: string;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
+  };
+  availability: string;
+  rating: number;
+  totalTrips: number;
+  photos: Array<{
+    
+    type: string;
+    url: string;
+    publicId: string;
+  }>;
+  bidPrice: number;
+  matchScore: number;
+  estimatedDeliveryTime: string;
+  distanceFromPickup?: number;
+  contactInfo: {
+    phone: string;
+    email: string;
+    whatsapp: string;
+  };
+  ownerMessage: string;
   status: string;
-  rating?: number;
-  totalTrips?: number; 
-   bidPrice?: number; 
-  publicId? : string; 
   isApproved: boolean;
+  isOpen: boolean;
+  trailerType: string;
+  tarpaulin: boolean;
   createdAt: string;
-  updatedAt?: string;
+  updatedAt: string;
 }
 
 // POD (Proof of Delivery) interface
@@ -233,4 +268,113 @@ export interface FormData {
   loadingTime: string;
   paymentTerms: 'advance' | 'cod' | 'after_pod' | 'to_pay' | 'credit';
   withXBowSupport: boolean;
+}
+
+//location Data interface (for location suggestions)
+export interface LocationData {
+  pincode: string;
+  state: string;
+  district: string;
+  place: string;
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+export interface OperatingArea {
+  state: string;
+  district: string;
+  place: string;
+}
+
+export interface VehicleFormData {
+  vehicleType: string;
+  vehicleSize: number;
+ 
+  dimensions: {
+    length: number;
+    breadth: number;
+  };
+  vehicleNumber: string;
+  passingLimit: number;
+  availability: string;
+  bodyType: string;
+  tarpaulin: 'one' | 'two' | 'none';
+  trailerType: 'lowbed' | 'semi-lowbed' | 'high-bed' | 'hydraulic-axle-8' | 'crane-14t' | 'crane-25t' | 'crane-50t' | 'crane-100t' | 'crane-200t' | 'none';
+  operatingAreas: OperatingArea[];
+}
+
+export interface VehicleApplication {
+  _id: string;
+  vehicleId: string;
+  loadId: string;
+  vehicleOwnerId: string;
+  vehicleOwnerName: string;
+  vehicle: Vehicle;
+  bidPrice?: number;
+  message?: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  appliedAt: string;
+  respondedAt?: string;
+}
+
+export interface LoadAssignment {
+  _id: string;
+  loadId: string;
+  vehicleId: string;
+  loadProviderId: string;
+  vehicleOwnerId: string;
+  agreedPrice?: number;
+  status: 'assigned' | 'in_progress' | 'delivered' | 'completed';
+  startedAt?: string;
+  deliveredAt?: string;
+  completedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Rating {
+  _id: string;
+  fromUserId: string;
+  toUserId: string;
+  loadId: string;
+  vehicleId?: string;
+  rating: number;
+  comment?: string;
+  type: 'load_provider_to_vehicle_owner' | 'vehicle_owner_to_load_provider';
+  createdAt: string;
+}
+
+export interface Message {
+  _id: string;
+  fromUserId: string;
+  toUserId: string;
+  loadId: string;
+  vehicleId?: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface VehicleRequest {
+  _id: string;
+  loadId: string;
+  vehicleId: string;
+  loadProviderId: string;
+  vehicleOwnerId: string;
+  loadProviderName: string;
+  load: Load;
+  vehicle: Vehicle;
+  message?: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  sentAt: string;
+  respondedAt?: string;
+}
+
+export interface MatchedVehicle extends Vehicle {
+  compatibilityScore: number;
+  distance?: number;
+  isRequested?: boolean;
+  requestStatus?: 'pending' | 'accepted' | 'rejected';
 }

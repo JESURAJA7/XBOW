@@ -19,6 +19,10 @@ import { PODManagementPage } from './Admin/components/PODManagementPage';
 import { BiddingInfo } from './screens/Bidding/BiddingInfo';
 import { BiddingPage } from './screens/Bidding/BiddingPage';
 import { AdminApp } from './Admin/components/AdminApp';
+import { LoadMatchedVehiclesPage } from './screens/loadProvider/LoadMatchedVehiclesPage';
+import { AdminLogin } from './Admin/auth/AdminLogin';
+import { AdminRegister } from './Admin/auth/AdminRegister';
+import { AdminProtectedRoute } from './Admin/auth/AdminProtectedRoute';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -175,14 +179,14 @@ const AppContent: React.FC = () => {
           }
         />
 
-           <Route 
-          path="/pods" 
+        <Route
+          path="/pods"
           element={
             <ProtectedRoute>
               <Navbar />
               <PODManagementPage />
             </ProtectedRoute>
-          } 
+          }
         />
 
         <Route
@@ -195,29 +199,52 @@ const AppContent: React.FC = () => {
           }
         />
 
-        <Route
+        {/* <Route
           path="/bidding"
           element={
             <ProtectedRoute>
               <Navbar />
-              <BiddingPage onBack={() => window.history.back} />
+              <BiddingPage
+                load={null} // Replace null with the actual load object as needed
+                onBack={() => window.history.back()}
+                onVehicleSelect={() => {}} // Replace with actual handler if needed
+              />
             </ProtectedRoute>
+          }
+        /> */}
+
+        <Route path="/load-matched-vehicles/:loadId"
+          element={
+            <ProtectedRoute>
+              <Navbar />
+              <LoadMatchedVehiclesPage />
+            </ProtectedRoute>
+          }
+        />
+
+          {/* ---------------- Admin Auth ---------------- */}
+        <Route path="/admin_login" element={<AdminLogin />} />
+        <Route path="/admin_register" element={<AdminRegister />} />
+
+        {/* ---------------- Admin Protected ---------------- */}
+        <Route
+          path="/admin/*"
+          element={
+            <AdminProtectedRoute>
+              <AdminApp />
+            </AdminProtectedRoute>
           }
         />
 
 
         {/* Default redirect */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-    
+      
+  <Route path="/" element={<Navigate to="/login" replace />} />
+  <Route path="*" element={<Navigate to="/login" replace />} />
 
-       {/* Admin Routes */}
-        <Route path="/admin/*" element={<AdminApp />} />
+</Routes>
 
-        {/* Default redirect */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
+
     </div>
   );
 };

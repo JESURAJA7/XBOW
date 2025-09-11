@@ -14,7 +14,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/common/CustomButton';
 import { Input } from '../../components/common/CustomInput';
 import toast from 'react-hot-toast';
-import logo from '../../assets/XBow-Logo.png';
+import logo from '../../assets/WhatsApp Image 2025-09-08 at 00.16.58_e20dd409.jpg';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -110,10 +110,10 @@ export const LoginPage: React.FC = () => {
             whileHover={{ scale: 1.05, rotate: 5 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <img src={logo} alt="XBOW" className='h-20 w-50'  />
+            <img src={logo} alt="Free Left" className='h-40 w-150'  />
           </motion.div>
           <h2 className="mt-6 text-4xl font-bold text-slate-900">
-            Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-600">XBOW</span>
+            Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-600">Free Left </span>
           </h2>
           <p className="mt-2 text-lg text-slate-600">
             Sign in to your logistics account
@@ -187,7 +187,7 @@ export const LoginPage: React.FC = () => {
             <p className="text-sm text-slate-500">
               Are you an admin?{' '}
               <Link
-                to="/admin"
+                to="/admin_login"
                 className="font-semibold text-purple-600 hover:text-purple-700 transition-colors"
               >
                 Admin Login
@@ -216,7 +216,7 @@ export const LoginPage: React.FC = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-slate-800">Select Demo Role</h3>
+                <h3 className="text-2xl font-bold text-slate-800">Select Role</h3>
                 <button
                   onClick={() => setShowDemoModal(false)}
                   className="text-slate-500 hover:text-slate-700 transition-colors"
@@ -250,7 +250,7 @@ export const LoginPage: React.FC = () => {
               </div>
 
               <div className="mt-6 text-center text-sm text-slate-500">
-                <p>All demo accounts use the same password: admin@4345</p>
+              
               </div>
             </motion.div>
           </motion.div>

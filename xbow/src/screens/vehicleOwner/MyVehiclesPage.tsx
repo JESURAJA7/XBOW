@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
+import {
   PlusIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
   EyeIcon,
   PencilIcon,
   TruckIcon,
@@ -17,13 +16,12 @@ import {
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { vehicleAPI } from '../../services/api';
-import type{ Vehicle } from '../../types/index';
+import type { Vehicle } from '../../types/index';
 import { Button } from '../../components/common/CustomButton';
 import { Input } from '../../components/common/CustomInput';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { Modal } from '../../components/common/Modal';
 import toast from 'react-hot-toast';
-import { mockVehicles } from '../../data/mockData';
 
 export const MyVehiclesPage: React.FC = () => {
   const { user } = useAuth();
@@ -46,11 +44,42 @@ export const MyVehiclesPage: React.FC = () => {
 
   const fetchVehicles = async () => {
     try {
-      // Using mock data for demonstration
-      setVehicles(mockVehicles );
-    } catch (error) {
+      setLoading(true);
+      const response = await vehicleAPI.getMyVehicles();
+
+      // Transform backend data to match frontend types
+      const transformedVehicles = response.data.data.map((vehicle: any) => ({
+        id: vehicle._id,
+        ownerId: vehicle.ownerId,
+        ownerName: vehicle.ownerName,
+        vehicleType: vehicle.vehicleType,
+        vehicleSize: vehicle.vehicleSize,
+        vehicleWeight: vehicle.vehicleWeight,
+        dimensions: vehicle.dimensions,
+        vehicleNumber: vehicle.vehicleNumber,
+        passingLimit: vehicle.passingLimit,
+        availability: vehicle.availability,
+        bodyType: vehicle.bodyType,
+        isOpen: vehicle.bodyType?.toLowerCase() === 'open',
+        tarpaulin: vehicle.tarpaulin,
+        trailerType: vehicle.trailerType,
+        preferredOperatingArea: vehicle.operatingAreas?.[0] || {
+          state: '',
+          district: '',
+          place: ''
+        },
+        operatingAreas: vehicle.operatingAreas || [],
+        photos: vehicle.photos || [],
+        status: vehicle.status || 'available',
+        isApproved: vehicle.isApproved,
+        createdAt: vehicle.createdAt,
+        updatedAt: vehicle.updatedAt
+      }));
+
+      setVehicles(transformedVehicles);
+    } catch (error: any) {
       console.error('Error fetching vehicles:', error);
-      toast.error('Failed to fetch vehicles');
+      toast.error(error.response?.data?.message || 'Failed to fetch vehicles');
     } finally {
       setLoading(false);
     }
@@ -75,7 +104,7 @@ export const MyVehiclesPage: React.FC = () => {
 
     // Approval filter
     if (approvalFilter !== 'all') {
-      filtered = filtered.filter(vehicle => 
+      filtered = filtered.filter(vehicle =>
         approvalFilter === 'approved' ? vehicle.isApproved : !vehicle.isApproved
       );
     }
@@ -105,9 +134,23 @@ export const MyVehiclesPage: React.FC = () => {
     try {
       await vehicleAPI.updateVehicleStatus(vehicleId, newStatus);
       toast.success('Vehicle status updated successfully');
-      fetchVehicles();
-    } catch (error) {
-      toast.error('Failed to update vehicle status');
+
+      // Update local state
+      setVehicles(prevVehicles =>
+        prevVehicles.map(vehicle =>
+          vehicle.id === vehicleId
+            ? { ...vehicle, status: newStatus }
+            : vehicle
+        )
+      );
+
+      // Update selected vehicle if it's the one being modified
+      if (selectedVehicle && selectedVehicle.id === vehicleId) {
+        setSelectedVehicle({ ...selectedVehicle, status: newStatus });
+      }
+    } catch (error: any) {
+      console.error('Error updating vehicle status:', error);
+      toast.error(error.response?.data?.message || 'Failed to update vehicle status');
     }
   };
 
@@ -263,7 +306,7 @@ export const MyVehiclesPage: React.FC = () => {
                         <TruckIcon className="h-16 w-16 text-slate-400" />
                       </div>
                     )}
-                    
+
                     {/* Status Badge */}
                     <div className="absolute top-4 left-4">
                       <div className={`flex items-center space-x-2 px-3 py-1 rounded-full border backdrop-blur-sm ${getStatusColor(vehicle.status)}`}>
@@ -313,7 +356,7 @@ export const MyVehiclesPage: React.FC = () => {
                       </div>
                       <div className="bg-slate-50 rounded-lg p-3">
                         <p className="text-slate-600 text-xs mb-1">Body Type</p>
-                        <p className="font-semibold text-slate-900">{vehicle.isOpen ? 'Open' : 'Closed'}</p>
+                        <p className="font-semibold text-slate-900 capitalize">{vehicle.vehicleType}</p>
                       </div>
                       <div className="bg-slate-50 rounded-lg p-3">
                         <p className="text-slate-600 text-xs mb-1">Tarpaulin</p>
@@ -321,7 +364,13 @@ export const MyVehiclesPage: React.FC = () => {
                       </div>
                     </div>
 
-                  
+                    {/* Availability */}
+                    <div className="bg-slate-50 rounded-lg p-3 mb-4">
+                      <p className="text-slate-600 text-xs mb-1">Availability</p>
+                      <p className="font-semibold text-slate-900">
+                        {new Date(vehicle.availability).toLocaleDateString()}
+                      </p>
+                    </div>
 
                     {/* Operating Area */}
                     <div className="mb-6">
@@ -349,7 +398,7 @@ export const MyVehiclesPage: React.FC = () => {
                       >
                         View Details
                       </Button>
-                      
+
                       {vehicle.isApproved && (
                         <div className="relative">
                           <select
@@ -383,7 +432,7 @@ export const MyVehiclesPage: React.FC = () => {
               {vehicles.length === 0 ? 'No vehicles registered yet' : 'No vehicles match your filters'}
             </h3>
             <p className="text-slate-600 mb-6">
-              {vehicles.length === 0 
+              {vehicles.length === 0
                 ? 'Add your first vehicle to start receiving load assignments'
                 : 'Try adjusting your search criteria or filters'
               }
@@ -441,10 +490,9 @@ export const MyVehiclesPage: React.FC = () => {
                     <p className="text-slate-600 text-sm mb-1">Passing Limit</p>
                     <p className="font-semibold text-slate-900">{selectedVehicle.passingLimit} Tons</p>
                   </div>
-                 
                   <div className="bg-slate-50 rounded-xl p-4">
                     <p className="text-slate-600 text-sm mb-1">Body Type</p>
-                    <p className="font-semibold text-slate-900">{selectedVehicle.isOpen ? 'Open' : 'Closed'}</p>
+                    <p className="font-semibold text-slate-900 capitalize">{selectedVehicle.vehicleType}</p>
                   </div>
                   <div className="bg-slate-50 rounded-xl p-4">
                     <p className="text-slate-600 text-sm mb-1">Tarpaulin</p>
@@ -452,17 +500,19 @@ export const MyVehiclesPage: React.FC = () => {
                   </div>
                   <div className="bg-slate-50 rounded-xl p-4">
                     <p className="text-slate-600 text-sm mb-1">Availability</p>
-                    <p className="font-semibold text-slate-900 capitalize">{selectedVehicle.availability}</p>
+                    <p className="font-semibold text-slate-900">
+                      {new Date(selectedVehicle.availability).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Trailer Information */}
-              {selectedVehicle.vehicleType && selectedVehicle.vehicleType !== 'none' && (
+              {selectedVehicle.trailerType && selectedVehicle.trailerType !== 'none' && (
                 <div>
                   <h3 className="font-semibold text-slate-900 mb-4">Trailer Information</h3>
                   <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                    <p className="font-medium text-blue-800">{selectedVehicle.vehicleType}</p>
+                    <p className="font-medium text-blue-800 capitalize">{selectedVehicle.trailerType.replace(/-/g, ' ')}</p>
                     <p className="text-blue-600 text-sm">Specialized trailer equipment available</p>
                   </div>
                 </div>
@@ -480,6 +530,21 @@ export const MyVehiclesPage: React.FC = () => {
                     {selectedVehicle.preferredOperatingArea.district}, {selectedVehicle.preferredOperatingArea.state}
                   </p>
                 </div>
+
+                {/* Show all operating areas if available */}
+                {selectedVehicle.preferredOperatingArea && (
+                  <div className="mt-4">
+                    <h4 className="font-medium text-slate-900 mb-2">Operating Area:</h4>
+                    <div className="bg-slate-100 rounded-lg p-2 mb-2">
+                      <p className="text-sm text-slate-700">
+                        {selectedVehicle.preferredOperatingArea.place},{" "}
+                        {selectedVehicle.preferredOperatingArea.district},{" "}
+                        {selectedVehicle.preferredOperatingArea.state}
+                      </p>
+                    </div>
+                  </div>
+
+                )}
               </div>
 
               {/* Vehicle Photos */}
@@ -491,16 +556,11 @@ export const MyVehiclesPage: React.FC = () => {
                       <div key={index} className="relative group">
                         <img
                           src={photo.url}
-                          alt={photo.type}
+                          alt={`Vehicle photo ${index + 1}`}
                           className="w-full h-24 object-cover rounded-lg border border-slate-200 group-hover:opacity-80 transition-opacity cursor-pointer"
                         />
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all rounded-lg flex items-center justify-center">
                           <EyeIcon className="text-white opacity-0 group-hover:opacity-100 transition-opacity h-5 w-5" />
-                        </div>
-                        <div className="absolute bottom-1 left-1 right-1">
-                          <span className="text-xs bg-black bg-opacity-70 text-white px-1 py-0.5 rounded text-center block capitalize">
-                            {photo.type.replace('_', ' ')}
-                          </span>
                         </div>
                       </div>
                     ))}
@@ -532,15 +592,4 @@ export const MyVehiclesPage: React.FC = () => {
       </div>
     </div>
   );
-};
-
-const updateVehicleStatus = async (vehicleId: string, newStatus: string) => {
-  try {
-    await vehicleAPI.updateVehicleStatus(vehicleId, newStatus);
-    toast.success('Vehicle status updated successfully');
-    // Refresh vehicles list
-    window.location.reload();
-  } catch (error) {
-    toast.error('Failed to update vehicle status');
-  }
 };

@@ -8,7 +8,10 @@ import {
   CurrencyRupeeIcon,
   ArrowTrendingUpIcon,
   EyeIcon,
-  MapPinIcon
+  MapPinIcon,
+  SparklesIcon,
+  BoltIcon,
+  RocketLaunchIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import { vehicleAPI, loadAPI } from '../../services/api';
@@ -80,6 +83,168 @@ export const VehicleOwnerDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Animated Vehicle Owner Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 rounded-3xl p-8 mb-8 shadow-2xl"
+        >
+          {/* Animated Background Elements */}
+          <div className="absolute inset-0 overflow-hidden">
+            {/* Floating Trucks */}
+            <motion.div
+              animate={{ 
+                x: [0, 100, 0],
+                y: [0, -20, 0]
+              }}
+              transition={{ 
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="absolute top-4 left-10 opacity-20"
+            >
+              <TruckIcon className="h-16 w-16 text-white" />
+            </motion.div>
+            
+            <motion.div
+              animate={{ 
+                x: [0, -80, 0],
+                y: [0, 15, 0]
+              }}
+              transition={{ 
+                duration: 10,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 2
+              }}
+              className="absolute bottom-4 right-20 opacity-15"
+            >
+              <TruckIcon className="h-20 w-20 text-white" />
+            </motion.div>
+
+            {/* Floating Sparkles */}
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                animate={{
+                  y: [0, -30, 0],
+                  opacity: [0.3, 1, 0.3],
+                  scale: [1, 1.2, 1]
+                }}
+                transition={{
+                  duration: 3 + i * 0.5,
+                  repeat: Infinity,
+                  delay: i * 0.8
+                }}
+                className="absolute"
+                style={{
+                  left: `${20 + i * 15}%`,
+                  top: `${30 + (i % 2) * 40}%`
+                }}
+              >
+                <SparklesIcon className="h-6 w-6 text-white opacity-40" />
+              </motion.div>
+            ))}
+
+            {/* Animated Lines */}
+            <motion.div
+              animate={{ scaleX: [0, 1, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute top-1/2 left-0 w-full h-0.5 bg-white opacity-20"
+            />
+          </div>
+
+          {/* Banner Content */}
+          <div className="relative z-10 flex items-center justify-between">
+            <div className="flex-1">
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
+                <h2 className="text-4xl font-bold text-white mb-2 flex items-center">
+                  <motion.span
+                    animate={{ 
+                      scale: [1, 1.1, 1],
+                      color: ["#ffffff", "#ff6b6b", "#ffffff"]
+                    }}
+                    transition={{ 
+                      duration: 2, 
+                      repeat: Infinity, 
+                      ease: "easeInOut" 
+                    }}
+                    className="mr-3 bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-yellow-400"
+                  >
+                    Free Left
+                  </motion.span>
+                </h2>
+                <div className="flex items-center space-x-6 text-white/90 mt-4">
+                  <div className="flex items-center space-x-2">
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                    </motion.div>
+                    <span className="text-sm font-medium">Real-time Load Matching</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                    >
+                      <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                    </motion.div>
+                    <span className="text-sm font-medium">Instant Payments</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                    >
+                      <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                    </motion.div>
+                    <span className="text-sm font-medium">24/7 Support</span>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className="hidden lg:block"
+            >
+              <div className="relative">
+                <motion.div
+                  animate={{ 
+                    y: [0, -10, 0],
+                    rotateY: [0, 5, 0]
+                  }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20"
+                >
+                  <div className="text-center">
+                    <motion.div
+                      animate={{ rotate: [0, 360] }}
+                      transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                    >
+                      <RocketLaunchIcon className="h-16 w-16 text-white mx-auto mb-3" />
+                    </motion.div>
+                    <div className="text-white font-bold text-2xl">
+                      {stats?.totalVehicles || 0}
+                    </div>
+                    <div className="text-white/80 text-sm">Active Vehicles</div>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -290,7 +455,7 @@ export const VehicleOwnerDashboard: React.FC = () => {
             <div className="divide-y divide-slate-200">
               {availableLoads.slice(0, 3).map((load) => (
                 <motion.div
-                  key={load.id}
+                  key={load._id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="p-6 hover:bg-slate-50 transition-colors"

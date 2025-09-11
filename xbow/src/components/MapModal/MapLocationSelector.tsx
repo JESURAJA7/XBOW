@@ -98,7 +98,9 @@ export const MapLocationSelector: React.FC<MapLocationSelectorProps> = ({
     initialLocation || null
   );
   const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629]); // India center
- const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  
   useEffect(() => {
     if (initialLocation?.coordinates.latitude && initialLocation?.coordinates.longitude) {
       setMapCenter([initialLocation.coordinates.latitude, initialLocation.coordinates.longitude]);
@@ -236,7 +238,7 @@ export const MapLocationSelector: React.FC<MapLocationSelectorProps> = ({
           </div>
 
           {/* Search Bar */}
-          <div className="p-6 border-b border-slate-200">
+          <div className="p-6 border-b border-slate-200 relative" ref={searchContainerRef}>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <MagnifyingGlassIcon className="h-5 w-5 text-slate-400" />
@@ -255,9 +257,9 @@ export const MapLocationSelector: React.FC<MapLocationSelectorProps> = ({
               )}
             </div>
 
-            {/* Search Results */}
+            {/* Search Results - Positioned below the search bar */}
             {searchResults.length > 0 && (
-              <div className="absolute z-10 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+              <div className="absolute z-50 w-full left-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                 {searchResults.map((result, index) => (
                   <button
                     key={index}
@@ -274,7 +276,7 @@ export const MapLocationSelector: React.FC<MapLocationSelectorProps> = ({
           </div>
 
           {/* Map Container */}
-          <div className="flex-1 relative">
+          <div className="flex-1 relative top-20 left-0 w-full h-full">
             <MapContainer
               center={mapCenter}
               zoom={selectedPosition ? 15 : 6}

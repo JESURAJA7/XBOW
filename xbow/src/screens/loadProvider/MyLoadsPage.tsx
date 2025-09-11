@@ -12,24 +12,44 @@ import {
   PhotoIcon,
   CheckCircleIcon,
   ClockIcon,
-  XCircleIcon
+  XCircleIcon,
+  ExclamationTriangleIcon,
+  ChatBubbleLeftRightIcon,
+  UserGroupIcon,
+  StarIcon,
+  ScaleIcon,
+ 
+  HandRaisedIcon
 } from '@heroicons/react/24/outline';
+import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import { useAuth } from '../../contexts/AuthContext';
-
-import type{ Load } from '../../types/index';
+import type { Load } from '../../types/index';
 import { Button } from '../../components/common/CustomButton';
 import { Input } from '../../components/common/CustomInput';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { Modal } from '../../components/common/Modal';
+import { LoadTimeline } from '../../components/LoadTimeline';
+import { MessageModal } from '../../components/MessageModal';
+import { VehicleMatchingModal } from '../../components/vehicles/VehicleMatchingModal';
+import { RatingModal } from '../../components/Rating/RatingModal';
+import { vehicleMatchingAPI } from '../../services/api';
 import toast from 'react-hot-toast';
-import { mockLoads } from '../../data/mockData';
+import { loadAPI } from '../../services/api';
+import { useNavigate } from 'react-router-dom';
 
 export const MyLoadsPage: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loads, setLoads] = useState<Load[]>([]);
   const [filteredLoads, setFilteredLoads] = useState<Load[]>([]);
   const [selectedLoad, setSelectedLoad] = useState<Load | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTimelineModalOpen, setIsTimelineModalOpen] = useState(false);
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const [isVehicleMatchingModalOpen, setIsVehicleMatchingModalOpen] = useState(false);
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+  const [applications, setApplications] = useState<any[]>([]);
+  const [assignedVehicle, setAssignedVehicle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -45,11 +65,20 @@ export const MyLoadsPage: React.FC = () => {
 
   const fetchLoads = async () => {
     try {
-      // Using mock data for demonstration
-      setLoads(mockLoads);
-    } catch (error) {
+      setLoading(true);
+      const response = await loadAPI.getMyLoads();
+      
+      if (response.data.success) {
+        setLoads(response.data.data);
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch loads');
+      }
+    } catch (error: any) {
       console.error('Error fetching loads:', error);
-      toast.error('Failed to fetch loads');
+      toast.error(error.response?.data?.message || 'Failed to fetch loads');
+      
+      // Fallback to empty array if API fails
+      setLoads([]);
     } finally {
       setLoading(false);
     }
@@ -63,9 +92,9 @@ export const MyLoadsPage: React.FC = () => {
       filtered = filtered.filter(load =>
         load.loadingLocation.place.toLowerCase().includes(searchTerm.toLowerCase()) ||
         load.unloadingLocation.place.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        load.materials?.some(material => 
+        (load.materials && load.materials.some(material => 
           material.name.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        ))
       );
     }
 
@@ -129,6 +158,117 @@ export const MyLoadsPage: React.FC = () => {
   const viewLoadDetails = (load: Load) => {
     setSelectedLoad(load);
     setIsModalOpen(true);
+  };
+
+  const updateLoadStatus = async (loadId: string, newStatus: string) => {
+    try {
+      const response = await loadAPI.updateLoadStatus(loadId, newStatus);
+      
+      if (response.data.success) {
+        toast.success('Load status updated successfully');
+        // Update the local state to reflect the change
+        setLoads(prevLoads => 
+          prevLoads.map(load => 
+            load._id === loadId ? { ...load, status: newStatus } : load
+          )
+        );
+        
+        // Update selected load if it's the same
+        if (selectedLoad?._id === loadId) {
+          setSelectedLoad(prev => prev ? { ...prev, status: newStatus } : null);
+        }
+      } else {
+        throw new Error(response.data.message || 'Failed to update load status');
+      }
+    } catch (error: any) {
+      console.error('Error updating load status:', error);
+      toast.error(error.response?.data?.message || 'Failed to update load status');
+    }
+  };
+
+  const fetchLoadApplications = async (loadId: string) => {
+    try {
+      const response = await loadAPI.getLoadApplications(loadId);
+      if (response.data.success) {
+        setApplications(response.data.data);
+        console.log('Fetched applications:', response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+    }
+  };
+
+  const viewLoadTimeline = (load: Load) => {
+    setSelectedLoad(load);
+    fetchLoadApplications(load._id);
+    setIsTimelineModalOpen(true);
+  };
+
+  const handleSendMessage = async (message: string) => {
+    if (!selectedLoad) return;
+    
+    try {
+      await loadAPI.sendMessage(selectedLoad._id, message);
+      toast.success('Message sent successfully!');
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      toast.error('Failed to send message');
+    }
+  };
+
+  const deleteLoad = async (loadId: string) => {
+    if (!window.confirm('Are you sure you want to delete this load?')) {
+      return;
+    }
+
+    try {
+      // This endpoint would need to be implemented in your backend
+      const response = await loadAPI.deleteLoad(loadId);
+      
+      if (response.data.success) {
+        toast.success('Load deleted successfully');
+        // Remove the load from the local state
+        setLoads(prevLoads => prevLoads.filter(load => load._id !== loadId));
+      } else {
+        throw new Error(response.data.message || 'Failed to delete load');
+      }
+    } catch (error: any) {
+      console.error('Error deleting load:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete load');
+    }
+  };
+
+  const handleSelectVehicle = async (vehicleId: string, bidPrice: number) => {
+    if (!selectedLoad) return;
+    
+    try {
+      const response = await vehicleMatchingAPI.selectVehicle(selectedLoad._id, vehicleId, bidPrice);
+      if (response.data.success) {
+        toast.success('Vehicle selected successfully!');
+        // Update the load status in local state
+        setLoads(prevLoads => 
+          prevLoads.map(load => 
+            load._id === selectedLoad._id 
+              ? { ...load, status: 'assigned', assignedVehicleId: vehicleId }
+              : load
+          )
+        );
+        setIsVehicleMatchingModalOpen(false);
+      }
+    } catch (error: any) {
+      console.error('Error selecting vehicle:', error);
+      toast.error('Failed to select vehicle');
+    }
+  };
+
+  const handleSendMessageToVehicle = async (vehicleId: string, message: string) => {
+    try {
+      await vehicleMatchingAPI.sendMessage(vehicleId, message, selectedLoad?._id || '');
+      toast.success('Message sent successfully!');
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      toast.error('Failed to send message');
+    }
   };
 
   if (loading) {
@@ -253,21 +393,25 @@ export const MyLoadsPage: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-8"
         >
           <AnimatePresence>
             {filteredLoads.map((load, index) => {
               const StatusIcon = getStatusIcon(load.status);
+              const totalWeight = load.materials?.reduce((sum, material) => sum + material.totalWeight, 0) || 0;
+              
               return (
                 <motion.div
-                  key={load.id}
+                  key={load._id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+                  className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer"
+                  onClick={() => viewLoadDetails(load)}
                 >
-                  <div className="p-6">
+                  {/* Load Header */}
+                  <div className="bg-gradient-to-r from-slate-50 to-blue-50 p-6 border-b border-slate-100">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
                       <div className={`flex items-center space-x-2 px-3 py-1 rounded-full border ${getStatusColor(load.status)}`}>
@@ -281,8 +425,16 @@ export const MyLoadsPage: React.FC = () => {
                       )}
                     </div>
 
+                    {/* Load ID and Date */}
+                    <div className="flex items-center justify-between text-sm text-slate-600 mb-4">
+                      <span>Load #{load._id.slice(-6).toUpperCase()}</span>
+                      <span>{new Date(load.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+
+                  <div className="p-6">
                     {/* Route */}
-                    <div className="mb-4">
+                    <div className="mb-6">
                       <div className="flex items-center space-x-3">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-2">
@@ -291,7 +443,11 @@ export const MyLoadsPage: React.FC = () => {
                           </div>
                           <p className="text-sm text-slate-600">{load.loadingLocation.district}, {load.loadingLocation.state}</p>
                         </div>
-                        <div className="text-slate-400">→</div>
+                        <div className="flex flex-col items-center">
+                          <div className="w-8 h-0.5 bg-slate-300 mb-1"></div>
+                          <TruckIcon className="h-4 w-4 text-slate-400" />
+                          <div className="w-8 h-0.5 bg-slate-300 mt-1"></div>
+                        </div>
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-2">
                             <MapPinIcon className="h-4 w-4 text-emerald-600" />
@@ -302,43 +458,125 @@ export const MyLoadsPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Details */}
-                    <div className="space-y-3 mb-6">
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-600 text-sm">Vehicle Required:</span>
-                        <span className="font-medium text-slate-900">{load.vehicleRequirement.size}ft {load.vehicleRequirement.vehicleType}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-600 text-sm">Materials:</span>
-                        <span className="font-medium text-slate-900">{load.materials?.length} item(s)</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-600 text-sm">Loading Date:</span>
-                        <span className="font-medium text-slate-900">{new Date(load.createdAt).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-600 text-sm">Payment:</span>
-                        <span className="font-medium text-slate-900 uppercase">{load.paymentTerms}</span>
-                      </div>
-                      {load.commissionApplicable && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-slate-600 text-sm">Commission:</span>
-                          <span className="font-medium text-emerald-600">₹{load.commissionAmount?.toLocaleString()}</span>
+                    {/* Key Details Grid */}
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <TruckIcon className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-800">Vehicle</span>
                         </div>
-                      )}
+                        <p className="text-sm text-blue-700">{load.vehicleRequirement.size}ft {load.vehicleRequirement.vehicleType}</p>
+                      </div>
+                      
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <ScaleIcon className="h-4 w-4 text-emerald-600" />
+                          <span className="text-sm font-medium text-emerald-800">Weight</span>
+                        </div>
+                        <p className="text-sm text-emerald-700">{totalWeight.toLocaleString()} kg</p>
+                      </div>
+                      
+                      <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <CalendarIcon className="h-4 w-4 text-orange-600" />
+                          <span className="text-sm font-medium text-orange-800">Loading</span>
+                        </div>
+                        <p className="text-sm text-orange-700">{new Date(load.loadingDate).toLocaleDateString()}</p>
+                      </div>
+                      
+                      <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <CurrencyRupeeIcon className="h-4 w-4 text-purple-600" />
+                          <span className="text-sm font-medium text-purple-800">Payment</span>
+                        </div>
+                        <p className="text-sm text-purple-700 uppercase">{load.paymentTerms}</p>
+                      </div>
+                    </div>
+
+                    {/* Materials Summary */}
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-slate-700">Materials</span>
+                        <span className="text-sm text-slate-600">{load.materials?.length || 0} items</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {load.materials?.slice(0, 3).map((material, idx) => (
+                          <span key={idx} className="text-xs bg-white border border-slate-200 px-2 py-1 rounded-lg">
+                            {material.name}
+                          </span>
+                        ))}
+                        {(load.materials?.length || 0) > 3 && (
+                          <span className="text-xs text-slate-500">+{(load.materials?.length || 0) - 3} more</span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Actions */}
-                    <div className="flex space-x-3">
-                      <Button
-                        onClick={() => viewLoadDetails(load)}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                        icon={<EyeIcon className="h-4 w-4" />}
-                      >
-                        View Details
-                      </Button>
+                    <div className="space-y-3">
+                      {load.status === 'posted' && (
+                        <div className="space-y-2">
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/load-matched-vehicles/${load._id}`);
+                            }}
+                            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                            icon={<TruckIcon className="h-4 w-4" />}
+                          >
+                            Find Matching Vehicles
+                          </Button>
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedLoad(load);
+                              setIsVehicleMatchingModalOpen(true);
+                            }}
+                            className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800"
+                            icon={<HandRaisedIcon className="h-4 w-4" />}
+                          >
+                            View Applications
+                          </Button>
+                        </div>
+                      )}
+                      
+                      <div className="grid grid-cols-3 gap-2">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            viewLoadDetails(load);
+                          }}
+                          variant="outline"
+                          size="sm"
+                          icon={<EyeIcon className="h-4 w-4" />}
+                        >
+                          Details
+                        </Button>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            viewLoadTimeline(load);
+                          }}
+                          variant="secondary"
+                          size="sm"
+                          icon={<ClockIcon className="h-4 w-4" />}
+                        >
+                          Timeline
+                        </Button>
+                        {load.status === 'posted' && (
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteLoad(load._id);
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 border-red-200 hover:bg-red-50"
+                            icon={<XCircleIcon className="h-4 w-4" />}
+                          >
+                            Delete
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -372,163 +610,362 @@ export const MyLoadsPage: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Load Details Modal */}
+        {/* Enhanced Load Details Modal */}
         <Modal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          title="Load Details"
-          size="xl"
+          title=""
+          fullScreen={true}
         >
           {selectedLoad && (
-            <div className="space-y-6">
-              {/* Status and Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
+            <div className="h-full flex flex-col">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
+                <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-slate-900 mb-3">Load Information</h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Load ID:</span>
-                        <span className="font-medium">{selectedLoad.id}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Status:</span>
-                        <div className={`flex items-center space-x-2 px-3 py-1 rounded-full ${getStatusColor(selectedLoad.status)}`}>
-                          <span className="text-sm font-medium capitalize">{selectedLoad.status}</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Loading Date:</span>
-                        <span className="font-medium">{new Date(selectedLoad.loadingTime).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Loading Time:</span>
-                        <span className="font-medium">{selectedLoad.loadingTime}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Payment Terms:</span>
-                        <span className="font-medium uppercase">{selectedLoad.paymentTerms}</span>
-                      </div>
-                    </div>
+                    <h2 className="text-2xl font-bold mb-2">Load Details</h2>
+                    <p className="text-blue-100">Load #{selectedLoad._id.slice(-6).toUpperCase()}</p>
                   </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-semibold text-slate-900 mb-3">Vehicle Requirements</h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Type:</span>
-                        <span className="font-medium">{selectedLoad.vehicleRequirement.vehicleType}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Size:</span>
-                        <span className="font-medium">{selectedLoad.vehicleRequirement.size} ft</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Trailer:</span>
-                        <span className="font-medium">{selectedLoad.vehicleRequirement.vehicleType || 'None'}</span>
-                      </div>
-                    </div>
+                  <div className={`flex items-center space-x-2 px-4 py-2 rounded-full bg-white bg-opacity-20`}>
+                    <StarIcon className="h-5 w-5" />
+                    <span className="font-medium capitalize">{selectedLoad.status}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Route Information */}
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-4">Route Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                    <h4 className="font-medium text-blue-800 mb-2 flex items-center">
-                      <MapPinIcon className="h-4 w-4 mr-2" />
-                      Loading Location
-                    </h4>
-                    <div className="text-sm text-blue-700">
-                      <p className="font-medium">{selectedLoad.loadingLocation.place}</p>
-                      <p>{selectedLoad.loadingLocation.district}, {selectedLoad.loadingLocation.state}</p>
-                      <p>PIN: {selectedLoad.loadingLocation.pincode}</p>
-                    </div>
-                  </div>
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                    <h4 className="font-medium text-emerald-800 mb-2 flex items-center">
-                      <MapPinIcon className="h-4 w-4 mr-2" />
-                      Unloading Location
-                    </h4>
-                    <div className="text-sm text-emerald-700">
-                      <p className="font-medium">{selectedLoad.unloadingLocation.place}</p>
-                      <p>{selectedLoad.unloadingLocation.district}, {selectedLoad.unloadingLocation.state}</p>
-                      <p>PIN: {selectedLoad.unloadingLocation.pincode}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Materials */}
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-4">Materials ({selectedLoad.materials?.length})</h3>
-                <div className="space-y-4">
-                  {selectedLoad.materials?.map((material, index) => (
-                    <div key={material.id} className="border border-slate-200 rounded-xl p-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <h4 className="font-medium text-slate-900 mb-2">Material {index + 1}: {material.name}</h4>
-                          <div className="text-sm text-slate-600 space-y-1">
-                            <p>Dimensions: {material.dimensions.length} × {material.dimensions.width} × {material.dimensions.height} ft</p>
-                            <p>Pack Type: <span className="capitalize">{material.packType}</span></p>
-                            <p>Total Count: {material.totalCount}</p>
+              {/* Content */}
+              <div className="flex-1 overflow-auto p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {/* Left Column - Route & Basic Info */}
+                  <div className="lg:col-span-2 space-y-6">
+                    {/* Route Information */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
+                      <h3 className="text-xl font-bold text-slate-900 mb-6">Route Information</h3>
+                      <div className="space-y-6">
+                        <div className="flex items-center space-x-6">
+                          <div className="flex-1 bg-blue-50 border border-blue-200 rounded-xl p-4">
+                            <div className="flex items-center space-x-2 mb-3">
+                              <MapPinIcon className="h-5 w-5 text-blue-600" />
+                              <span className="font-semibold text-blue-800">Loading Point</span>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="font-medium text-slate-900">{selectedLoad.loadingLocation.place}</p>
+                              <p className="text-sm text-slate-600">{selectedLoad.loadingLocation.district}, {selectedLoad.loadingLocation.state}</p>
+                              <p className="text-sm text-slate-500">PIN: {selectedLoad.loadingLocation.pincode}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-col items-center">
+                            <div className="w-12 h-0.5 bg-slate-300 mb-2"></div>
+                            <TruckIcon className="h-6 w-6 text-slate-400" />
+                            <div className="w-12 h-0.5 bg-slate-300 mt-2"></div>
+                          </div>
+                          
+                          <div className="flex-1 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                            <div className="flex items-center space-x-2 mb-3">
+                              <MapPinIcon className="h-5 w-5 text-emerald-600" />
+                              <span className="font-semibold text-emerald-800">Delivery Point</span>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="font-medium text-slate-900">{selectedLoad.unloadingLocation.place}</p>
+                              <p className="text-sm text-slate-600">{selectedLoad.unloadingLocation.district}, {selectedLoad.unloadingLocation.state}</p>
+                              <p className="text-sm text-slate-500">PIN: {selectedLoad.unloadingLocation.pincode}</p>
+                            </div>
                           </div>
                         </div>
-                        <div className="text-sm text-slate-600 space-y-1">
-                          <p>Single Weight: {material.singleWeight} kg</p>
-                          <p>Total Weight: <span className="font-semibold text-slate-900">{material.totalWeight} kg</span></p>
+                        
+                        {/* Schedule */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <CalendarIcon className="h-4 w-4 text-orange-600" />
+                              <span className="font-medium text-orange-800">Loading Date</span>
+                            </div>
+                            <p className="text-lg font-semibold text-slate-900">{new Date(selectedLoad.loadingDate).toLocaleDateString()}</p>
+                            <p className="text-sm text-slate-600">{selectedLoad.loadingTime}</p>
+                          </div>
+                          
+                          <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <CurrencyRupeeIcon className="h-4 w-4 text-purple-600" />
+                              <span className="font-medium text-purple-800">Payment Terms</span>
+                            </div>
+                            <p className="text-lg font-semibold text-slate-900 uppercase">{selectedLoad.paymentTerms}</p>
+                            {selectedLoad.commissionApplicable && (
+                              <p className="text-sm text-emerald-600">Commission: ₹{selectedLoad.commissionAmount?.toLocaleString()}</p>
+                            )}
+                          </div>
                         </div>
                       </div>
-                      
-                      {/* Material Photos */}
-                      {material.photos.length > 0 && (
-                        <div>
-                          <h5 className="font-medium text-slate-900 mb-3">Material Photos</h5>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            {material.photos.map((photo, photoIndex) => (
-                              <div key={photoIndex} className="relative group">
-                                <img
-                                  src={photo.url}
-                                  alt={photo.type}
-                                  className="w-full h-24 object-cover rounded-lg border border-slate-200 group-hover:opacity-80 transition-opacity cursor-pointer"
-                                />
-                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all rounded-lg flex items-center justify-center">
-                                  <EyeIcon className="text-white opacity-0 group-hover:opacity-100 transition-opacity h-5 w-5" />
-                                </div>
-                                <div className="absolute bottom-1 left-1 right-1">
-                                  <span className="text-xs bg-black bg-opacity-70 text-white px-2 py-1 rounded text-center block capitalize">
-                                    {photo.type.replace('material_', '').replace('_', ' ')}
-                                  </span>
+                    </div>
+
+                    {/* Materials Details */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
+                      <h3 className="text-xl font-bold text-slate-900 mb-6">Materials ({selectedLoad.materials?.length || 0})</h3>
+                      <div className="space-y-4">
+                        {selectedLoad.materials?.map((material, index) => (
+                          <div key={material.id || index} className="border border-slate-200 rounded-xl p-4 hover:bg-slate-50 transition-colors">
+                            <div className="flex items-center justify-between mb-4">
+                              <h4 className="font-semibold text-slate-900">{material.name}</h4>
+                              <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-sm font-medium">
+                                {material.totalWeight} kg
+                              </span>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <span className="text-slate-600">Dimensions:</span>
+                                <p className="font-medium">{material.dimensions.length}×{material.dimensions.width}×{material.dimensions.height} ft</p>
+                              </div>
+                              <div>
+                                <span className="text-slate-600">Pack Type:</span>
+                                <p className="font-medium capitalize">{material.packType}</p>
+                              </div>
+                              <div>
+                                <span className="text-slate-600">Count:</span>
+                                <p className="font-medium">{material.totalCount}</p>
+                              </div>
+                              <div>
+                                <span className="text-slate-600">Unit Weight:</span>
+                                <p className="font-medium">{material.singleWeight} kg</p>
+                              </div>
+                            </div>
+                            
+                            {/* Material Photos */}
+                            {material.photos && material.photos.length > 0 && (
+                              <div className="mt-4">
+                                <h5 className="font-medium text-slate-900 mb-3 flex items-center">
+                                  <PhotoIcon className="h-4 w-4 mr-2" />
+                                  Photos
+                                </h5>
+                                <div className="grid grid-cols-4 gap-3">
+                                  {material.photos.map((photo, photoIndex) => (
+                                    <div key={photoIndex} className="relative group">
+                                      <img
+                                        src={photo.url}
+                                        alt={photo.type}
+                                        className="w-full h-20 object-cover rounded-lg border border-slate-200 group-hover:opacity-80 transition-opacity cursor-pointer"
+                                      />
+                                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all rounded-lg flex items-center justify-center">
+                                        <EyeIcon className="text-white opacity-0 group-hover:opacity-100 transition-opacity h-5 w-5" />
+                                      </div>
+                                    </div>
+                                  ))}
                                 </div>
                               </div>
-                            ))}
+                            )}
                           </div>
-                        </div>
-                      )}
+                        ))}
+                      </div>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Right Column - Vehicle Requirements & Actions */}
+                  <div className="space-y-6">
+                    {/* Vehicle Requirements */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
+                      <h3 className="text-lg font-bold text-slate-900 mb-4">Vehicle Requirements</h3>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-600">Type:</span>
+                          <span className="font-medium text-slate-900 capitalize">{selectedLoad.vehicleRequirement.vehicleType}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-600">Size:</span>
+                          <span className="font-medium text-slate-900">{selectedLoad.vehicleRequirement.size} ft</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-600">Trailer:</span>
+                          <span className="font-medium text-slate-900 capitalize">{selectedLoad.vehicleRequirement.trailerType || 'None'}</span>
+                        </div>
+                        {/* <div className="flex items-center justify-between">
+                          <span className="text-slate-600">Total Weight:</span>
+                          <span className="font-medium text-slate-900">{totalWeight.toLocaleString()} kg</span>
+                        </div> */}
+                      </div>
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
+                      <h3 className="text-lg font-bold text-slate-900 mb-4">Quick Actions</h3>
+                      <div className="space-y-3">
+                        {selectedLoad.status === 'posted' && (
+                          <Button
+                            onClick={() => {
+                              setIsModalOpen(false);
+                              navigate(`/load-matched-vehicles/${selectedLoad._id}`);
+                            }}
+                            className="w-full bg-gradient-to-r from-blue-600 to-blue-700"
+                            icon={<TruckIcon className="h-4 w-4" />}
+                          >
+                            Find Matching Vehicles
+                          </Button>
+                        )}
+                        <Button
+                          onClick={() => {
+                            setIsModalOpen(false);
+                            setIsVehicleMatchingModalOpen(true);
+                          }}
+                          className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700"
+                          icon={<HandRaisedIcon className="h-4 w-4" />}
+                        >
+                          View Applications
+                          </Button>
+                        <Button
+                          onClick={() => {
+                            setIsModalOpen(false);
+                            setIsTimelineModalOpen(true);
+                          }}
+                          variant="outline"
+                          className="w-full"
+                          icon={<ClockIcon className="h-4 w-4" />}
+                        >
+                          View Timeline
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setIsModalOpen(false);
+                            setIsMessageModalOpen(true);
+                          }}
+                          variant="outline"
+                          className="w-full"
+                          icon={<ChatBubbleLeftRightIcon className="h-4 w-4" />}
+                        >
+                          Message Vehicle Owner
+                        </Button>
+                        <Button
+                          onClick={() => updateLoadStatus(selectedLoad._id, 'completed')}
+                          variant="outline"
+                          className="w-full"
+                          disabled={selectedLoad.status === 'completed'}
+                        >
+                          Mark as Completed
+                        </Button>
+                        
+                        {selectedLoad.status === 'completed' && (
+                          <Button
+                            onClick={() => {
+                              setIsModalOpen(false);
+                              setIsRatingModalOpen(true);
+                            }}
+                            variant="outline"
+                            className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
+                            icon={<StarIcon className="h-4 w-4" />}
+                          >
+                            Rate Vehicle Owner
+                          </Button>
+                        )}
+                        
+                        {selectedLoad.status === 'completed' && (
+                          <Button
+                            onClick={() => {
+                              setIsModalOpen(false);
+                              setIsRatingModalOpen(true);
+                            }}
+                            variant="outline"
+                            className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
+                            icon={<StarIcon className="h-4 w-4" />}
+                          >
+                            Rate Vehicle Owner
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Load Statistics */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
+                      <h3 className="text-lg font-bold text-slate-900 mb-4">Load Statistics</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-600">Created:</span>
+                          <span className="font-medium text-slate-900">{new Date(selectedLoad.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-600">Materials:</span>
+                          <span className="font-medium text-slate-900">{selectedLoad.materials?.length || 0} items</span>
+                        </div>
+                        {/* <div className="flex items-center justify-between">
+                          <span className="text-slate-600">Total Weight:</span>
+                          <span className="font-medium text-slate-900">{totalWeight.toLocaleString()} kg</span>
+                        </div> */}
+                        {selectedLoad.commissionApplicable && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-600">Commission:</span>
+                            <span className="font-medium text-emerald-600">₹{selectedLoad.commissionAmount?.toLocaleString()}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              {/* Commission Info */}
-              {selectedLoad.commissionApplicable && (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                  <h3 className="font-medium text-emerald-800 mb-2 flex items-center">
-                    <CurrencyRupeeIcon className="h-5 w-5 mr-2" />
-                    Commission Details
-                  </h3>
-                  <p className="text-sm text-emerald-700">
-                    5% commission applicable (₹{selectedLoad.commissionAmount?.toLocaleString()}) as XBOW is responsible for coordinating this transport.
-                  </p>
-                </div>
-              )}
             </div>
           )}
         </Modal>
+
+        {/* Timeline Modal */}
+        <Modal
+          isOpen={isTimelineModalOpen}
+          onClose={() => setIsTimelineModalOpen(false)}
+          title=""
+          size="lg"
+        >
+          {selectedLoad && (
+            <LoadTimeline
+              currentStatus={selectedLoad.status}
+              loadingDate={selectedLoad.loadingDate}
+              onStatusChange={(status) => updateLoadStatus(selectedLoad._id, status)}
+              onSendMessage={() => {
+                setIsTimelineModalOpen(false);
+                setIsMessageModalOpen(true);
+              }}
+            />
+          )}
+        </Modal>
+
+        {/* Message Modal */}
+        <MessageModal
+          isOpen={isMessageModalOpen}
+          onClose={() => setIsMessageModalOpen(false)}
+          loadProviderName={selectedLoad?.loadProviderName || 'Vehicle Owner'}
+          loadId={selectedLoad?._id || ''}
+          onSendMessage={handleSendMessage}
+        />
+
+        {/* Vehicle Matching Modal */}
+        <VehicleMatchingModal
+          isOpen={isVehicleMatchingModalOpen}
+          onClose={() => setIsVehicleMatchingModalOpen(false)}
+          load={selectedLoad}
+          onSelectVehicle={handleSelectVehicle}
+          onSendMessage={handleSendMessageToVehicle}
+        />
+
+        {/* Rating Modal */}
+        <RatingModal
+          isOpen={isRatingModalOpen}
+          onClose={() => setIsRatingModalOpen(false)}
+          load={selectedLoad}
+          vehicle={assignedVehicle}
+          userType="load_provider"
+          onRatingSubmitted={() => {
+            setIsRatingModalOpen(false);
+            fetchLoads();
+          }}
+        />
+
+        {/* Rating Modal */}
+        <RatingModal
+          isOpen={isRatingModalOpen}
+          onClose={() => setIsRatingModalOpen(false)}
+          load={selectedLoad}
+          vehicle={assignedVehicle}
+          userType="load_provider"
+          onRatingSubmitted={() => {
+            setIsRatingModalOpen(false);
+            fetchLoads();
+          }}
+        />
       </div>
     </div>
   );

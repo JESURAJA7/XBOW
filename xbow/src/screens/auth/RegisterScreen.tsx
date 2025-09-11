@@ -13,7 +13,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/common/CustomButton';
 import { Input } from '../../components/common/CustomInput';
 import toast from 'react-hot-toast';
-import logo from '../../assets/XBow-Logo.png';
+import logo from '../../assets/WhatsApp Image 2025-09-08 at 00.16.58_e20dd409.jpg';
 
 export const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -95,10 +95,10 @@ export const RegisterPage: React.FC = () => {
             whileHover={{ scale: 1.05, rotate: 5 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-             <img src={logo} alt="XBOW" className='h-20 w-50'  />
+             <img src={logo} alt="Free Left" className='h-40 w-100'  />
           </motion.div>
           <h2 className="mt-6 text-4xl font-bold text-slate-900">
-            Join <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-600">XBOW</span>
+            Join <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-600">Free Left</span>
           </h2>
           <p className="mt-2 text-lg text-slate-600">
             Create your logistics account

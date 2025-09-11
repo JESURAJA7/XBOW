@@ -2,50 +2,47 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
-  TruckIcon,
-  PhotoIcon,
-  DocumentTextIcon,
-  MapPinIcon
-} from '@heroicons/react/24/outline';
+  Truck,
+  FileText,
+  MapPin,
+  AlertTriangle
+} from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/common/CustomButton';
 import { Input } from '../../components/common/CustomInput';
-import { LoadingSpinner } from '../common/LoadingSpinner';
+import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { PhotoUploadGrid } from '../../components/vehicles/PhotoUploadGrid';
+import { OperatingAreaForm } from '../../components/vehicles/OperatingAreaForm';
+import { useCloudinaryUpload } from '../../hooks/useCloudinaryUpload';
 import { vehicleAPI, profileAPI } from '../../services/api';
+import { VehiclePhoto, VehicleFormData, OperatingArea } from '../../types/index';
 import toast from 'react-hot-toast';
-
-interface VehiclePhoto {
-  type: 'front' | 'side' | 'back' | 'rc_permit' | 'optional' | 'license' | 'rc_book' | 'vehicle_photo';
-  file: File | null;
-  preview: string;
-}
+import { p } from 'framer-motion/client';
 
 export const AddVehiclePage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { uploadMultiple, uploading: cloudinaryUploading, progress } = useCloudinaryUpload();
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [profileComplete, setProfileComplete] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<VehicleFormData>({
     vehicleType: '10-wheel',
     vehicleSize: 14,
-    vehicleWeight: 10,
+    
     dimensions: {
       length: 14,
       breadth: 6
     },
     vehicleNumber: '',
     passingLimit: 10,
-    availability: 'today' as 'today' | 'tomorrow' | 'immediate',
-    isOpen: true,
-    tarpaulin: 'one' as 'one' | 'two' | 'none',
-    trailerType: 'none' as 'lowbed' | 'semi-lowbed' | 'hydraulic-axle-8' | 'crane-14t' | 'crane-25t' | 'crane-50t' | 'crane-100t' | 'crane-200t' | 'none',
-    preferredOperatingArea: {
-      state: '',
-      district: '',
-      place: ''
-    }
+    availability: '',
+    bodyType: 'open',
+    tarpaulin: 'one',
+    trailerType: 'none',
+    operatingAreas: [{ state: '', district: '', place: '' }]
   });
 
   const [photos, setPhotos] = useState<VehiclePhoto[]>([
@@ -54,7 +51,9 @@ export const AddVehiclePage: React.FC = () => {
     { type: 'back', file: null, preview: '' },
     { type: 'license', file: null, preview: '' },
     { type: 'rc_book', file: null, preview: '' },
-    { type: 'vehicle_photo', file: null, preview: '' }
+    { type: 'aadhaar_front', file: null, preview: '' },
+    { type: 'aadhaar_back', file: null, preview: '' },
+    { type: 'optional', file: null, preview: '' }
   ]);
 
   useEffect(() => {
@@ -74,12 +73,14 @@ export const AddVehiclePage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error checking profile:', error);
+      toast.error('Error checking profile status');
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePhotoUpload = (index: number, file: File) => {
+  const handlePhotoUpload = async (index: number, file: File) => {
+    // Update preview immediately
     const updatedPhotos = [...photos];
     updatedPhotos[index] = {
       ...updatedPhotos[index],
@@ -89,70 +90,136 @@ export const AddVehiclePage: React.FC = () => {
     setPhotos(updatedPhotos);
   };
 
+  const handleRemovePhoto = (index: number) => {
+    const updatedPhotos = [...photos];
+    if (updatedPhotos[index].preview) {
+      URL.revokeObjectURL(updatedPhotos[index].preview);
+    }
+    updatedPhotos[index] = { ...updatedPhotos[index], file: null, preview: '', cloudinaryUrl: '', publicId: '' };
+    setPhotos(updatedPhotos);
+  };
+
+  const handleAreaChange = (index: number, field: keyof OperatingArea, value: string) => {
+    const updated = [...formData.operatingAreas];
+    updated[index] = { ...updated[index], [field]: value };
+    setFormData(prev => ({ ...prev, operatingAreas: updated }));
+  };
+
+  const addOperatingArea = () => {
+    setFormData(prev => ({
+      ...prev,
+      operatingAreas: [...prev.operatingAreas, { state: '', district: '', place: '' }]
+    }));
+  };
+
+  const removeOperatingArea = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      operatingAreas: prev.operatingAreas.filter((_, i) => i !== index)
+    }));
+  };
+
+  const validateForm = (): boolean => {
+    // Check required photos
+    const requiredPhotoTypes = ['front', 'side', 'back', 'license', 'rc_book', 'aadhaar_front', 'aadhaar_back'];
+    const uploadedRequiredPhotos = photos.filter(photo =>
+      requiredPhotoTypes.includes(photo.type) && photo.file
+    );
+
+    if (uploadedRequiredPhotos.length < requiredPhotoTypes.length) {
+      toast.error('Please upload all required photos');
+      return false;
+    }
+
+    // Check operating areas
+    const validAreas = formData.operatingAreas.filter(area =>
+      area.state && area.district && area.place
+    );
+
+    if (validAreas.length === 0) {
+      toast.error('Please add at least one complete operating area');
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if(!profileComplete) {
+      toast.error('Please complete your profile first');
+      navigate('/profile/complete');
+      return;
+    }
+    
+
+    if (!validateForm()) return;
+
     setSubmitting(true);
 
     try {
-      // Validate required photos
-      const requiredPhotos = photos.filter(photo => 
-        ['front', 'side', 'back', 'rc_permit'].includes(photo.type) && photo.file
-      );
-      
-      if (requiredPhotos.length < 4) {
-        toast.error('Please upload all required photos (Front, Side, Back, RC/Permit)');
-        return;
-      }
+      // Prepare FormData
+      const formDataObj = new FormData();
 
-      const response = await vehicleAPI.createVehicle(formData);
-      
-      if (response.data.success) {
-        const vehicleId = response.data.data._id;
-        
-        // Upload photos
-        const photoData = photos
-          .filter(photo => photo.file)
-          .map(photo => ({
-            type: photo.type,
-            base64: photo.preview // In real implementation, convert file to base64
-          }));
-
-        if (photoData.length > 0) {
-          await vehicleAPI.uploadVehiclePhotos(vehicleId, photoData);
+      // Append vehicle details
+      Object.entries(formData).forEach(([key, value]) => {
+        if (typeof value === "object") {
+          formDataObj.append(key, JSON.stringify(value)); // stringify objects like dimensions, operatingAreas
+        } else {
+          formDataObj.append(key, value as any);
         }
+      });
 
-        toast.success('Vehicle registered successfully! Waiting for admin approval.');
-        navigate('/my-vehicles');
+      // Append photos
+      photos.forEach((photo) => {
+        if (photo.file) {
+          formDataObj.append("images", photo.file); // 'images' must match backend multer field
+        }
+      });
+
+      // Send as multipart/form-data
+      const response = await vehicleAPI.createVehicle(formDataObj, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
+
+      if (response.data.success) {
+        toast.success("Vehicle registered successfully!");
+        navigate("/my-vehicles");
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to register vehicle');
+      console.error("Error submitting vehicle:", error);
+      toast.error(error.response?.data?.message || "Failed to register vehicle");
     } finally {
       setSubmitting(false);
     }
   };
 
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-emerald-50">
         <LoadingSpinner size="xl" />
       </div>
     );
   }
 
   if (!profileComplete) {
-    return null; // Will redirect to profile completion
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Add New Vehicle</h1>
-          <p className="text-slate-600">Register your vehicle to start receiving load assignments</p>
+          <h1 className="text-4xl font-bold text-slate-900 mb-3">Add New Vehicle</h1>
+          <p className="text-lg text-slate-600">Register your vehicle to start receiving load assignments</p>
         </motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -161,80 +228,75 @@ export const AddVehiclePage: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-2xl shadow-xl p-8"
+            className="bg-white rounded-2xl shadow-xl p-8 border border-slate-100"
           >
-            <div className="flex items-center space-x-3 mb-6">
-              <TruckIcon className="h-6 w-6 text-emerald-600" />
-              <h3 className="text-xl font-semibold text-slate-900">Vehicle Information</h3>
+            <div className="flex items-center space-x-3 mb-8">
+              <div className="p-2 bg-emerald-100 rounded-xl">
+                <Truck className="h-6 w-6 text-emerald-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900">Vehicle Information</h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label className="block text-sm font-semibold text-slate-700 mb-3">
                   Vehicle Type *
                 </label>
                 <select
                   value={formData.vehicleType}
                   onChange={(e) => setFormData(prev => ({ ...prev, vehicleType: e.target.value }))}
-                  className="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:border-emerald-500 focus:outline-none"
+                  className="w-full px-4 py-4 border-2 border-slate-300 rounded-xl focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 transition-all duration-200"
                   required
                 >
-                  <option value="2-wheel">2-wheel</option>
-                  <option value="3-wheel">3-wheel</option>
-                  <option value="4-wheel">4-wheel</option>
-                  <option value="6-wheel">6-wheel</option>
-                  <option value="8-wheel">8-wheel</option>
-                  <option value="10-wheel">10-wheel</option>
-                  <option value="12-wheel">12-wheel</option>
-                  <option value="14-wheel">14-wheel</option>
-                  <option value="16-wheel">16-wheel</option>
-                  <option value="18-wheel">18-wheel</option>
-                  <option value="20-wheel">20-wheel</option>
+                  <option value="2-wheel">2-wheeler Bike</option>
+                  <option value="3-wheel">3-wheeler Auto</option>
+                  <option value="4-wheel">4-wheeler pickup/Dost/Tata Ace</option>
+                  <option value="6-wheel">6-wheeler Eicher/Canter/JCB</option>
+                  <option value="10-wheel">10-wheeler Lorry</option>
+                  <option value="12-wheel">12-wheeler Lorry</option>
+                  <option value="14-wheel">14-wheeler Lorry</option>
+                  <option value="16-wheel">16-wheeler Lorry</option>
+                  <option value="18-wheel">18-wheeler Lorry</option>
+                  <option value="20-wheel">20-wheeler Lorry</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label className="block text-sm font-semibold text-slate-700 mb-3">
                   Vehicle Size (ft) *
                 </label>
                 <select
                   value={formData.vehicleSize}
                   onChange={(e) => setFormData(prev => ({ ...prev, vehicleSize: Number(e.target.value) }))}
-                  className="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:border-emerald-500 focus:outline-none"
+                  className="w-full px-4 py-4 border-2 border-slate-300 rounded-xl focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 transition-all duration-200"
                   required
                 >
-                  {[6, 8.5, 10, 14, 17, 19, 20, 22, 24].map(size => (
+                  {[6, 8.5, 10, 14, 17, 19, 20, 22, 24, 26, 32].map(size => (
                     <option key={size} value={size}>{size} ft</option>
                   ))}
                 </select>
               </div>
 
-              <Input
-                label="Vehicle Weight (Tons)"
-                type="number"
-                value={formData.vehicleWeight.toString()}
-                onChange={(value) => setFormData(prev => ({ ...prev, vehicleWeight: Number(value) }))}
-                required
-              />
+            
 
               <Input
-                label="Length (ft)"
+                label="Width (ft)"
                 type="number"
                 value={formData.dimensions.length.toString()}
-                onChange={(value) => setFormData(prev => ({ 
-                  ...prev, 
-                  dimensions: { ...prev.dimensions, length: Number(value) }
+                onChange={(value) => setFormData(prev => ({
+                  ...prev,
+                  dimensions: { ...prev.dimensions, length: Number(value) || 0 }
                 }))}
                 required
               />
 
               <Input
-                label="Breadth (ft)"
+                label="Height (ft)"
                 type="number"
                 value={formData.dimensions.breadth.toString()}
-                onChange={(value) => setFormData(prev => ({ 
-                  ...prev, 
-                  dimensions: { ...prev.dimensions, breadth: Number(value) }
+                onChange={(value) => setFormData(prev => ({
+                  ...prev,
+                  dimensions: { ...prev.dimensions, breadth: Number(value) || 0 }
                 }))}
                 required
               />
@@ -251,60 +313,65 @@ export const AddVehiclePage: React.FC = () => {
                 label="Passing Limit (Tons)"
                 type="number"
                 value={formData.passingLimit.toString()}
-                onChange={(value) => setFormData(prev => ({ ...prev, passingLimit: Number(value) }))}
+                onChange={(value) => setFormData(prev => ({ ...prev, passingLimit: Number(value) || 0 }))}
                 required
               />
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Availability *
+                <label className="block text-sm font-semibold text-slate-700 mb-3">
+                  Availability Date *
                 </label>
-                <select
+                <input
+                  type="date"
                   value={formData.availability}
-                  onChange={(e) => setFormData(prev => ({ ...prev, availability: e.target.value as any }))}
-                  className="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:border-emerald-500 focus:outline-none"
+                  onChange={(e) => setFormData(prev => ({ ...prev, availability: e.target.value }))}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-4 py-4 border-2 border-slate-300 rounded-xl focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 transition-all duration-200"
                   required
-                >
-                  <option value="today">Today</option>
-                  <option value="tomorrow">Tomorrow</option>
-                  <option value="immediate">Immediate</option>
-                </select>
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label className="block text-sm font-semibold text-slate-700 mb-3">
                   Vehicle Body Type *
                 </label>
-                <div className="flex space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      checked={formData.isOpen}
-                      onChange={() => setFormData(prev => ({ ...prev, isOpen: true }))}
-                      className="w-4 h-4 text-emerald-600 border-slate-300 focus:ring-emerald-500"
-                    />
-                    <span className="ml-2 text-sm text-slate-700">Open</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      checked={!formData.isOpen}
-                      onChange={() => setFormData(prev => ({ ...prev, isOpen: false }))}
-                      className="w-4 h-4 text-emerald-600 border-slate-300 focus:ring-emerald-500"
-                    />
-                    <span className="ml-2 text-sm text-slate-700">Closed</span>
-                  </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { value: 'open', label: 'Open' },
+                    { value: 'container', label: 'Container' },
+                    { value: 'darus', label: 'Darus' }
+                  ].map(option => (
+                    <label key={option.value} className="relative cursor-pointer">
+                      <input
+                        type="radio"
+                        name="bodyType"
+                        value={option.value}
+                        checked={formData.bodyType === option.value}
+                        onChange={() => setFormData(prev => ({ ...prev, bodyType: option.value as any }))}
+                        className="sr-only"
+                      />
+                      <div className={`
+                        p-4 text-center rounded-xl border-2 transition-all duration-200
+                        ${formData.bodyType === option.value
+                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                          : 'border-slate-300 bg-white text-slate-700 hover:border-emerald-300'
+                        }
+                      `}>
+                        <span className="text-sm font-medium">{option.label}</span>
+                      </div>
+                    </label>
+                  ))}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label className="block text-sm font-semibold text-slate-700 mb-3">
                   Tarpaulin *
                 </label>
                 <select
                   value={formData.tarpaulin}
                   onChange={(e) => setFormData(prev => ({ ...prev, tarpaulin: e.target.value as any }))}
-                  className="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:border-emerald-500 focus:outline-none"
+                  className="w-full px-4 py-4 border-2 border-slate-300 rounded-xl focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 transition-all duration-200"
                   required
                 >
                   <option value="one">One</option>
@@ -314,17 +381,18 @@ export const AddVehiclePage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label className="block text-sm font-semibold text-slate-700 mb-3">
                   Trailer Type
                 </label>
                 <select
                   value={formData.trailerType}
                   onChange={(e) => setFormData(prev => ({ ...prev, trailerType: e.target.value as any }))}
-                  className="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:border-emerald-500 focus:outline-none"
+                  className="w-full px-4 py-4 border-2 border-slate-300 rounded-xl focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 transition-all duration-200"
                 >
                   <option value="none">None</option>
-                  <option value="lowbed">Lowbed</option>
+                  <option value="lowbed">Lowbed Trailer</option>
                   <option value="semi-lowbed">Semi-Lowbed</option>
+                  <option value="high-bed">High Bed Trailer</option>
                   <option value="hydraulic-axle-8">Hydraulic Axle (8 Axle)</option>
                   <option value="crane-14t">Crane (14T)</option>
                   <option value="crane-25t">Crane (25T)</option>
@@ -336,111 +404,50 @@ export const AddVehiclePage: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Operating Area */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-2xl shadow-xl p-8"
-          >
-            <div className="flex items-center space-x-3 mb-6">
-              <MapPinIcon className="h-6 w-6 text-emerald-600" />
-              <h3 className="text-xl font-semibold text-slate-900">Preferred Operating Area</h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Input
-                label="State"
-                value={formData.preferredOperatingArea.state}
-                onChange={(value) => setFormData(prev => ({
-                  ...prev,
-                  preferredOperatingArea: { ...prev.preferredOperatingArea, state: value }
-                }))}
-                required
-              />
-
-              <Input
-                label="District"
-                value={formData.preferredOperatingArea.district}
-                onChange={(value) => setFormData(prev => ({
-                  ...prev,
-                  preferredOperatingArea: { ...prev.preferredOperatingArea, district: value }
-                }))}
-                required
-              />
-
-              <Input
-                label="Place"
-                value={formData.preferredOperatingArea.place}
-                onChange={(value) => setFormData(prev => ({
-                  ...prev,
-                  preferredOperatingArea: { ...prev.preferredOperatingArea, place: value }
-                }))}
-                required
-              />
-            </div>
-          </motion.div>
+          {/* Operating Areas */}
+          <OperatingAreaForm
+            operatingAreas={formData.operatingAreas}
+            onAreaChange={handleAreaChange}
+            onAddArea={addOperatingArea}
+            onRemoveArea={removeOperatingArea}
+          />
 
           {/* Vehicle Photos */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-white rounded-2xl shadow-xl p-8"
+            className="bg-white rounded-2xl shadow-xl p-8 border border-slate-100"
           >
-            <div className="flex items-center space-x-3 mb-6">
-              <DocumentTextIcon className="h-6 w-6 text-emerald-600" />
-              <h3 className="text-xl font-semibold text-slate-900">Vehicle Documents & Photos</h3>
+            <div className="flex items-center space-x-3 mb-8">
+              <div className="p-2 bg-emerald-100 rounded-xl">
+                <FileText className="h-6 w-6 text-emerald-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900">
+                Vehicle Documents & Photos
+              </h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
-              {photos.map((photo, index) => (
-                <div key={index} className="text-center">
-                  <div className="w-full h-40 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center mb-3 overflow-hidden">
-                    {photo.preview ? (
-                      <img
-                        src={photo.preview}
-                        alt={photo.type}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <PhotoIcon className="h-12 w-12 text-slate-400" />
-                    )}
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handlePhotoUpload(index, file);
-                    }}
-                    className="hidden"
-                    id={`photo-${index}`}
-                  />
-                  <label
-                    htmlFor={`photo-${index}`}
-                    className="text-sm text-emerald-600 cursor-pointer hover:text-emerald-700 font-medium capitalize"
-                  >
-                    {photo.type.replace('_', ' ').replace('rc book', 'RC Book')} 
-                    {['front', 'side', 'back', 'license', 'rc_book'].includes(photo.type) && (
-                      <span className="text-red-500 ml-1">*</span>
-                    )}
-                  </label>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {photo.type === 'license' ? 'Upload License' : 
-                     photo.type === 'rc_book' ? 'Upload RC Book' : 
-                     photo.type === 'vehicle_photo' ? 'Vehicle Photo' : 
-                     `${photo.type} view`}
-                  </p>
+            <PhotoUploadGrid
+              photos={photos}
+              onPhotoUpload={handlePhotoUpload}
+              onRemovePhoto={handleRemovePhoto}
+              uploadProgress={progress}
+            />
+
+            <div className="mt-8 p-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl">
+              <div className="flex items-start space-x-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-amber-900 mb-1">Important Requirements</p>
+                  <ul className="text-sm text-amber-800 space-y-1">
+                    <li>• All marked photos (*) are mandatory for vehicle registration</li>
+                    <li>• Images should be clear and readable</li>
+                    <li>• Maximum file size: 10MB per image</li>
+                    <li>• Supported formats: JPEG, PNG, WebP</li>
+                  </ul>
                 </div>
-              ))}
-            </div>
-
-            <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-sm text-amber-800">
-                <strong>Note:</strong> Front, Side, Back, License, and RC Book uploads are required. 
-                Vehicle Photo can be used for interior, tyres, or any additional details.
-              </p>
+              </div>
             </div>
           </motion.div>
 
@@ -449,16 +456,15 @@ export const AddVehiclePage: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="flex justify-end"
+            className="flex justify-center pt-4"
           >
             <Button
               type="submit"
-              loading={submitting}
+              loading={submitting || cloudinaryUploading}
               size="lg"
-              className="px-12"
-              variant="secondary"
+              className="px-16 py-4 text-lg font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
-              Register Vehicle
+              {submitting ? 'Registering Vehicle...' : cloudinaryUploading ? 'Uploading Photos...' : 'Register Vehicle'}
             </Button>
           </motion.div>
         </form>

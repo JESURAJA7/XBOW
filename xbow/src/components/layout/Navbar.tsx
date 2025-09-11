@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../common/CustomButton';
-import Logo from '../../assets/logo.png';
+import Logo from '../../assets/WhatsApp Image 2025-09-08 at 00.16.58_e20dd409.jpg';
 
 export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -49,9 +49,9 @@ export const Navbar: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center space-x-3">
-            <img src={Logo} alt="Xbow" className="h-8 w-auto" />
+            <img src={Logo} alt="Free Left" className="h-[100px] w-[180px]" />
             <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-600">
-              XBOW
+              Free Left
             </span>
           </Link>
 

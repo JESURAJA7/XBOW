@@ -13,6 +13,7 @@ interface ModalProps {
   showCloseButton?: boolean;
   closeOnOverlayClick?: boolean;
   className?: string;
+  fullScreen?: boolean; // Add fullScreen prop
 }
 
 export const Modal: React.FC<ModalProps> = ({ 
@@ -23,7 +24,8 @@ export const Modal: React.FC<ModalProps> = ({
   size = 'md',
   showCloseButton = true,
   closeOnOverlayClick = true,
-  className = ''
+  className = '',
+  fullScreen = false // Default to false
 }) => {
   // Handle escape key
   useEffect(() => {
@@ -58,6 +60,58 @@ export const Modal: React.FC<ModalProps> = ({
     }
   };
 
+  // Full screen styles
+  if (fullScreen) {
+    return (
+      <AnimatePresence>
+        {isOpen && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-slate-900 bg-opacity-75 backdrop-blur-sm transition-opacity"
+              onClick={handleOverlayClick}
+            />
+            
+            {/* Full Screen Modal Content */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ type: "spring", duration: 0.3 }}
+              className="fixed inset-0 bg-white z-50 overflow-hidden flex flex-col"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-slate-50">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">{title}</h3>
+                </div>
+                {showCloseButton && (
+                  <motion.button
+                    onClick={onClose}
+                    className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <XMarkIcon className="h-5 w-5" />
+                  </motion.button>
+                )}
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto">
+                {children}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    );
+  }
+
+  // Regular modal
   return (
     <AnimatePresence>
       {isOpen && (
@@ -111,6 +165,7 @@ export const Modal: React.FC<ModalProps> = ({
     </AnimatePresence>
   );
 };
+
 
 // Image Gallery Modal Component
 interface ImageGalleryModalProps {

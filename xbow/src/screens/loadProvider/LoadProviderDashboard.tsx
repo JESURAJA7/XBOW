@@ -7,7 +7,10 @@ import {
   TruckIcon,
   CurrencyRupeeIcon,
   ArrowTrendingUpIcon,
-  EyeIcon
+  EyeIcon,
+  GlobeAltIcon,
+  ChartBarIcon,
+  StarIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import { loadAPI } from '../../services/api';
@@ -72,6 +75,225 @@ export const LoadProviderDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Animated Load Provider Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl p-8 mb-8 shadow-2xl"
+        >
+          {/* Animated Background Elements */}
+          <div className="absolute inset-0 overflow-hidden">
+            {/* Floating Documents */}
+            <motion.div
+              animate={{ 
+                x: [0, 120, 0],
+                y: [0, -25, 0],
+                rotate: [0, 10, 0]
+              }}
+              transition={{ 
+                duration: 12,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="absolute top-6 left-16 opacity-20"
+            >
+              <DocumentTextIcon className="h-14 w-14 text-white" />
+            </motion.div>
+            
+            <motion.div
+              animate={{ 
+                x: [0, -90, 0],
+                y: [0, 20, 0],
+                rotate: [0, -15, 0]
+              }}
+              transition={{ 
+                duration: 10,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 3
+              }}
+              className="absolute bottom-8 right-24 opacity-15"
+            >
+              <ChartBarIcon className="h-18 w-18 text-white" />
+            </motion.div>
+
+            {/* Network Connections */}
+            <motion.div
+              animate={{ 
+                scale: [1, 1.1, 1],
+                opacity: [0.3, 0.6, 0.3]
+              }}
+              transition={{ 
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+            >
+              <GlobeAltIcon className="h-32 w-32 text-white opacity-10" />
+            </motion.div>
+
+            {/* Floating Stars */}
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={i}
+                animate={{
+                  y: [0, -40, 0],
+                  opacity: [0.2, 0.8, 0.2],
+                  scale: [0.8, 1.3, 0.8],
+                  rotate: [0, 180, 360]
+                }}
+                transition={{
+                  duration: 4 + i * 0.3,
+                  repeat: Infinity,
+                  delay: i * 0.6
+                }}
+                className="absolute"
+                style={{
+                  left: `${15 + i * 12}%`,
+                  top: `${25 + (i % 3) * 25}%`
+                }}
+              >
+                <StarIcon className="h-5 w-5 text-white opacity-30" />
+              </motion.div>
+            ))}
+
+            {/* Animated Gradient Overlay */}
+            <motion.div
+              animate={{ 
+                background: [
+                  'linear-gradient(45deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
+                  'linear-gradient(45deg, rgba(147, 51, 234, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)'
+                ]
+              }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-0"
+            />
+          </div>
+
+          {/* Banner Content */}
+          <div className="relative z-10 flex items-center justify-between">
+            <div className="flex-1">
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
+                <h2 className="text-4xl font-bold text-white mb-2 flex items-center">
+                  <motion.span
+                    animate={{ 
+                      scale: [1, 1.1, 1],
+                      color: ["#ffffff", "#ff6b6b", "#ffffff"]
+                    }}
+                    transition={{ 
+                      duration: 2, 
+                      repeat: Infinity, 
+                      ease: "easeInOut" 
+                    }}
+                    className="mr-3 bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-yellow-400"
+                  >
+                    Free Left
+                  </motion.span>
+                </h2>
+                <div className="flex items-center space-x-6 text-white/90 mt-4">
+                  <div className="flex items-center space-x-2">
+                    <motion.div
+                      animate={{ 
+                        boxShadow: [
+                          '0 0 0 0 rgba(34, 197, 94, 0.7)',
+                          '0 0 0 10px rgba(34, 197, 94, 0)',
+                        ]
+                      }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="w-3 h-3 bg-green-400 rounded-full"
+                    />
+                    <span className="text-sm font-medium">Smart Matching</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <motion.div
+                      animate={{ 
+                        boxShadow: [
+                          '0 0 0 0 rgba(59, 130, 246, 0.7)',
+                          '0 0 0 10px rgba(59, 130, 246, 0)',
+                        ]
+                      }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                      className="w-3 h-3 bg-blue-400 rounded-full"
+                    />
+                    <span className="text-sm font-medium">Real-time Tracking</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <motion.div
+                      animate={{ 
+                        boxShadow: [
+                          '0 0 0 0 rgba(251, 191, 36, 0.7)',
+                          '0 0 0 10px rgba(251, 191, 36, 0)',
+                        ]
+                      }}
+                      transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                      className="w-3 h-3 bg-yellow-400 rounded-full"
+                    />
+                    <span className="text-sm font-medium">Cost Optimization</span>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className="hidden lg:block"
+            >
+              <div className="relative">
+                <motion.div
+                  animate={{ 
+                    y: [0, -15, 0],
+                    rotateX: [0, 5, 0]
+                  }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                  className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20"
+                >
+                  <div className="text-center">
+                    <motion.div
+                      animate={{ 
+                        scale: [1, 1.1, 1],
+                        rotate: [0, 10, -10, 0]
+                      }}
+                      transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <DocumentTextIcon className="h-16 w-16 text-white mx-auto mb-3" />
+                    </motion.div>
+                    <div className="text-white font-bold text-2xl">
+                      {stats?.totalLoads || 0}
+                    </div>
+                    <div className="text-white/80 text-sm">Total Loads</div>
+                  </div>
+                </motion.div>
+
+                {/* Floating Revenue Card */}
+                <motion.div
+                  animate={{ 
+                    x: [0, 10, 0],
+                    y: [0, -5, 0]
+                  }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+                  className="absolute -bottom-4 -right-4 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-3 shadow-lg"
+                >
+                  <div className="text-center">
+                    <CurrencyRupeeIcon className="h-8 w-8 text-white mx-auto mb-1" />
+                    <div className="text-white font-bold text-sm">
+                      ₹{((stats?.monthlyRevenue || 0) / 1000).toFixed(0)}K
+                    </div>
+                    <div className="text-white/80 text-xs">Revenue</div>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -212,7 +434,7 @@ export const LoadProviderDashboard: React.FC = () => {
           <div className="divide-y divide-slate-200">
             {loads.slice(0, 5).map((load) => (
               <motion.div
-                key={load.id}
+                key={load._id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="p-6 hover:bg-slate-50 transition-colors"

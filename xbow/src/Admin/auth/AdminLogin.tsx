@@ -35,9 +35,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
     setLoading(true);
     try {
       const response = await adminAPI.login({ email, password });
-      
+      console.log("Login Response:", response.data);
       if (response.data.success) {
-        const { token, user } = response.data;
+        const { token, data: user } = response.data; 
         
         if (user.role !== 'admin' && user.role !== 'super_admin') {
           toast.error('Access denied. Admin privileges required.');
@@ -48,8 +48,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
         Cookies.set('xbow_admin_user', JSON.stringify(user), { expires: 7 });
         
         toast.success('Login successful!');
+        window.location.href = '/admin';
         onLoginSuccess?.();
-        window.location.href = '/admin/dashboard';
+        
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Login failed');
@@ -118,6 +119,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
             <Button
               type="submit"
               loading={loading}
+              onClick={handleSubmit}
               fullWidth
               size="lg"
               className="mt-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"

@@ -62,7 +62,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab, o
             <div className="h-10 w-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
               <ShieldCheckIcon className="h-6 w-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-white">XBOW Admin</span>
+            <span className="text-xl font-bold text-white">Free Left Admin</span>
           </div>
           <button
             onClick={() => setIsSidebarOpen(false)}

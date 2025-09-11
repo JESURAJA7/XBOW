@@ -34,6 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const checkAuthState = async () => {
     try {
       const token = Cookies.get('xbow_token');
+      //console.log('Auth check token:', token);
       const userData = Cookies.get('xbow_user');
       
       if (token && userData) {
@@ -57,6 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { token, user: userData } = response.data;
         
         Cookies.set('xbow_token', token, { expires: 7 });
+        console.log('token after login:', token);
         Cookies.set('xbow_user', JSON.stringify(userData), { expires: 7 });
         setUser(userData);
         

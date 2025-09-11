@@ -4,7 +4,7 @@ import { LoadingSpinner } from './LoadingSpinner';
 
 interface ButtonProps {
   children: React.ReactNode;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void; 
   type?: 'button' | 'submit' | 'reset';
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg' | 'xl';
