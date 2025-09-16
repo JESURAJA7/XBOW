@@ -23,7 +23,14 @@ import { LoadMatchedVehiclesPage } from './screens/loadProvider/LoadMatchedVehic
 import { AdminLogin } from './Admin/auth/AdminLogin';
 import { AdminRegister } from './Admin/auth/AdminRegister';
 import { AdminProtectedRoute } from './Admin/auth/AdminProtectedRoute';
+<<<<<<< HEAD
+import { BiddingModal } from './screens/Bidding/BiddingModal';
+import { LiveBiddingPage } from './screens/Bidding/LiveBiddingPage';
+import { AnimatedFooter } from './components/layout/AnimatedFooter';
+import { BiddingMonitorPage } from './screens/Bidding/BiddingMonitorPage';
+=======
 
+>>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
@@ -106,6 +113,7 @@ const AppContent: React.FC = () => {
             <ProtectedRoute>
               <Navbar />
               <DashboardRoute />
+              <AnimatedFooter />
             </ProtectedRoute>
           }
         />
@@ -125,6 +133,7 @@ const AppContent: React.FC = () => {
             <ProtectedRoute>
               <Navbar />
               <PostLoadPage />
+              <AnimatedFooter />
             </ProtectedRoute>
           }
         />
@@ -135,6 +144,7 @@ const AppContent: React.FC = () => {
             <ProtectedRoute>
               <Navbar />
               <AddVehiclePage />
+              <AnimatedFooter />
             </ProtectedRoute>
           }
         />
@@ -145,6 +155,7 @@ const AppContent: React.FC = () => {
             <ProtectedRoute>
               <Navbar />
               <SubscriptionPage />
+              <AnimatedFooter />
             </ProtectedRoute>
           }
         />
@@ -155,6 +166,7 @@ const AppContent: React.FC = () => {
             <ProtectedRoute>
               <Navbar />
               <MyLoadsPage />
+              <AnimatedFooter />
             </ProtectedRoute>
           }
         />
@@ -165,6 +177,7 @@ const AppContent: React.FC = () => {
             <ProtectedRoute>
               <Navbar />
               <FindLoadsPage />
+              <AnimatedFooter />
             </ProtectedRoute>
           }
         />
@@ -175,6 +188,7 @@ const AppContent: React.FC = () => {
             <ProtectedRoute>
               <Navbar />
               <MyVehiclesPage />
+              <AnimatedFooter />
             </ProtectedRoute>
           }
         />
@@ -185,6 +199,7 @@ const AppContent: React.FC = () => {
             <ProtectedRoute>
               <Navbar />
               <PODManagementPage />
+              <AnimatedFooter />
             </ProtectedRoute>
           }
         />
@@ -195,10 +210,34 @@ const AppContent: React.FC = () => {
             <ProtectedRoute>
               <Navbar />
               <BiddingInfo onBack={() => window.history.back()} />
+                <AnimatedFooter />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/bidding/:loadId"
+          element={
+            <ProtectedRoute>
+              <Navbar />
+                <BiddingPage />   
+                <AnimatedFooter />       
             </ProtectedRoute>
           }
         />
 
+<<<<<<< HEAD
+          <Route
+          path="/live-bidding"
+          element={
+            <ProtectedRoute>
+              <Navbar />
+                <LiveBiddingPage />          
+            </ProtectedRoute>
+          }
+        />
+
+=======
+>>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
         {/* <Route
           path="/bidding"
           element={
@@ -218,6 +257,19 @@ const AppContent: React.FC = () => {
             <ProtectedRoute>
               <Navbar />
               <LoadMatchedVehiclesPage />
+<<<<<<< HEAD
+              <AnimatedFooter />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/bidding-monitor/:sessionId"
+          element={
+            <ProtectedRoute>
+              <Navbar />
+              <BiddingMonitorPage />
+              <AnimatedFooter />
+=======
+>>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
             </ProtectedRoute>
           }
         />

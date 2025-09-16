@@ -346,6 +346,56 @@ export interface Rating {
   createdAt: string;
 }
 
+<<<<<<< HEAD
+export interface BiddingSession {
+  _id: string;
+  loadId: Load;
+  loadProviderId: string;
+  startTime: string;
+  endTime: string;
+  status: 'active' | 'closed' | 'completed';
+  minBidAmount?: number;
+  maxBidAmount?: number;
+  winningBidAmount?: number;
+  winningBidId?: string;
+  totalBids: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Bid {
+  _id: string;
+  biddingSessionId: string;
+  loadId: string;
+  vehicleId: string;
+  vehicleOwnerId: string;
+  vehicleOwnerName: string;
+  bidAmount: number;
+  message?: string;
+  isWinning: boolean;
+  status: 'active' | 'withdrawn' | 'selected';
+  createdAt: string;
+  updatedAt: string;
+  vehicle?: Vehicle;
+}
+
+export interface TransportRequest {
+  _id: string;
+  loadId: string;
+  vehicleId: string;
+  loadProviderId: string;
+  vehicleOwnerId: string;
+  bidId: string;
+  agreedPrice: number;
+  message?: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  sentAt: string;
+  respondedAt?: string;
+}
+
+
+=======
+>>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
 export interface Message {
   _id: string;
   fromUserId: string;

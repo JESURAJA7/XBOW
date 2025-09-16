@@ -16,35 +16,36 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { Modal, ImageGalleryModal, ConfirmationModal } from '../../components/common/Modal';
 import { adminAPI } from '../services/adminApi';
 import toast from 'react-hot-toast';
+import type{ Vehicle } from '../../types';
 
-interface Vehicle {
-  _id: string;
-  ownerId: any;
-  ownerName: string;
-  vehicleType: string;
-  vehicleSize: number;
-  vehicleWeight: number;
-  dimensions: { length: number; breadth: number };
-  vehicleNumber: string;
-  passingLimit: number;
-  availability: string;
-  isOpen: boolean;
-  tarpaulin: string;
-  trailerType: string;
-  preferredOperatingArea: {
-    state: string;
-    district: string;
-    place: string;
-  };
-  photos: Array<{
-    type: string;
-    url: string;
-    publicId: string;
-  }>;
-  status: string;
-  isApproved: boolean;
-  createdAt: string;
-}
+// interface Vehicle {
+//   _id: string;
+//   ownerId: any;
+//   ownerName: string;
+//   vehicleType: string;
+//   vehicleSize: number;
+//   vehicleWeight: number;
+//   dimensions: { length: number; breadth: number };
+//   vehicleNumber: string;
+//   passingLimit: number;
+//   availability: string;
+//   isOpen: boolean;
+//   tarpaulin: string;
+//   trailerType: string;
+//   operatingAreas: Array<{
+//     state: string;
+//     district: string;
+//     place: string;
+//   }>;
+//   photos: Array<{
+//     type: string;
+//     url: string;
+//     publicId: string;
+//   }>;
+//   status: string;
+//   isApproved: boolean;
+//   createdAt: string;
+// }
 
 export const VehicleManagement: React.FC = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -405,8 +406,8 @@ export const VehicleManagement: React.FC = () => {
                       Operating Area
                     </p>
                     <div className="bg-slate-50 rounded-lg p-3">
-                      <p className="font-medium text-slate-900 text-sm">{vehicle.preferredOperatingArea.place}</p>
-                      <p className="text-slate-600 text-xs">{vehicle.preferredOperatingArea.district}, {vehicle.preferredOperatingArea.state}</p>
+                      {/* <p className="font-medium text-slate-900 text-sm">{vehicle.preferredOperatingArea.place}</p> */}
+                      {/* <p className="text-slate-600 text-xs">{vehicle.preferredOperatingArea.district}, {vehicle.preferredOperatingArea.state}</p> */}
                     </div>
                   </div>
 
@@ -478,15 +479,15 @@ export const VehicleManagement: React.FC = () => {
           {selectedVehicle && (
             <div className="space-y-6">
               {/* Owner Information */}
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              {/* <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                 <h3 className="font-semibold text-blue-800 mb-2">Vehicle Owner</h3>
                 <div className="text-blue-700 text-sm space-y-1">
                   <p className="font-medium">{selectedVehicle.ownerName}</p>
-                  <p>Email: {selectedVehicle.ownerId.email}</p>
+                  <p>Email: {selectedVehicle.ownerId}</p>
                   <p>Phone: {selectedVehicle.ownerId.phone}</p>
                   <p>WhatsApp: {selectedVehicle.ownerId.whatsappNumber}</p>
                 </div>
-              </div>
+              </div> */}
 
               {/* Vehicle Specifications */}
               <div>
@@ -514,7 +515,7 @@ export const VehicleManagement: React.FC = () => {
                   </div>
                   <div className="bg-slate-50 rounded-xl p-4">
                     <p className="text-slate-600 text-sm mb-1">Dimensions</p>
-                    <p className="font-semibold text-slate-900">{selectedVehicle.dimensions.length} × {selectedVehicle.dimensions.breadth} ft</p>
+                    <p className="font-semibold text-slate-900">{selectedVehicle.dimensions.length} × {selectedVehicle.dimensions.height} ft</p>
                   </div>
                   <div className="bg-slate-50 rounded-xl p-4">
                     <p className="text-slate-600 text-sm mb-1">Body Type</p>

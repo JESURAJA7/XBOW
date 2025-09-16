@@ -1813,6 +1813,73 @@ export const updateLoadStatus = async (req, res) => {
   }
 };
 
+export const getVehicleOwnerProfile = async (req, res) => {
+  try {
+    const { ownerId } = req.params;
+    console.log('Getting vehicle owner profile for:', ownerId);
+
+    // Get user profile
+    const user = await User.findById(ownerId).select('-password');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vehicle owner not found'
+      });
+    }
+
+    // Get user statistics
+    const completedJourneys = await LoadAssignment.countDocuments({
+      vehicleOwnerId: ownerId,
+      status: 'completed'
+    });
+
+    // Get average rating
+    const ratingStats = await Rating.aggregate([
+      { $match: { ratedUserId: ownerId } },
+      {
+        $group: {
+          _id: null,
+          averageRating: { $avg: '$rating' },
+          totalRatings: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const rating = ratingStats.length > 0 ? ratingStats[0].averageRating : 0;
+    const totalRatings = ratingStats.length > 0 ? ratingStats[0].totalRatings : 0;
+
+    const profile = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      profileImage: user.profileImage,
+      rating: rating,
+      totalRatings: totalRatings,
+      completedJourneys: completedJourneys,
+      joinedDate: user.createdAt,
+      isVerified: user.isVerified || false,
+      documents: user.documents || {
+        license: { verified: false },
+        aadhar: { verified: false },
+        pan: { verified: false }
+      }
+    };
+
+    res.json({
+      success: true,
+      data: profile
+    });
+  } catch (error) {
+    console.error('Error getting vehicle owner profile:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get vehicle owner profile'
+    });
+  }
+};
+
+
 
 
 

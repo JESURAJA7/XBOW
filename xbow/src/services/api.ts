@@ -1,6 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
+import { BiddingSession } from '../types/index';
 
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -55,7 +56,11 @@ export const loadAPI = {
     api.post(`${API_BASE_URL}/loads`, data, config),
   getMyLoads: () => api.get(`${API_BASE_URL}/loads`),
   getAvailableLoads: (params?: any) => api.get('/loads/available', { params }),
+<<<<<<< HEAD
+  getLoad: (id: string) => api.get(`${API_BASE_URL}/loads/${id}`),
+=======
   getLoad: (id: string) => api.get(`/loads/${id}`),
+>>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
   uploadMaterialPhotos: (loadId: string, materialIndex: number, formData: FormData) =>
   api.post(
     `${API_BASE_URL}/loads/materials/${materialIndex}/photos`,
@@ -102,10 +107,45 @@ export const loadAPI = {
 export const vehicleAPI = {
  createVehicle: (data: any, config = {}) =>
     api.post(`${API_BASE_URL}/vehicles`, data, config),
+<<<<<<< HEAD
+ getVehicleOwnerProfile: (ownerId: any) => {
+    // Extract the actual ID from the object
+    let actualId: string;
+    
+    if (typeof ownerId === 'string') {
+      actualId = ownerId;
+    } else if (typeof ownerId === 'object' && ownerId !== null) {
+      actualId = ownerId._id || ownerId.id || ownerId.vehicleOwnerId;
+    } else {
+      console.error('Invalid ownerId:', ownerId);
+      return Promise.reject(new Error('Invalid owner ID'));
+    }
+    
+    return api.get(`${API_BASE_URL}/vehicles/owner/${actualId}/profile`);
+  },
+  getMyVehicles: () => api.get(`${API_BASE_URL}/vehicles`),
+  getAvailableVehicles: (params?: any) => api.get(`${API_BASE_URL}/vehicles/available`, { params }),
+ getVehicle: (vehicleId: any) => {
+    // Extract the actual ID from the object
+    let actualId: string;
+    
+    if (typeof vehicleId === 'string') {
+      actualId = vehicleId;
+    } else if (typeof vehicleId === 'object' && vehicleId !== null) {
+      actualId = vehicleId._id || vehicleId.id || vehicleId.vehicleId;
+    } else {
+      console.error('Invalid vehicleId:', vehicleId);
+      return Promise.reject(new Error('Invalid vehicle ID'));
+    }
+    
+    return api.get(`${API_BASE_URL}/vehicles/${actualId}`);
+  },
+=======
 
   getMyVehicles: () => api.get(`${API_BASE_URL}/vehicles`),
   getAvailableVehicles: (params?: any) => api.get(`${API_BASE_URL}/vehicles/available`, { params }),
   getVehicle: (id: string) => api.get(`${API_BASE_URL}/vehicles/${id}`),
+>>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
   uploadVehiclePhotos: (vehicleId: string, photos: any[]) =>
     api.post(`/vehicles/${vehicleId}/photos`, { photos }),
   updateVehicleStatus: (vehicleId: string, status: string) =>
@@ -255,4 +295,94 @@ export const vehicleRequestAPI = {
     return api.post(`/vehicles/assignments/${assignmentId}/message`, { message });
   }
 };
+<<<<<<< HEAD
+
+export const biddingAPI = {
+  // Bidding Session Management
+  createBiddingSession: (loadId: string, startTime: string, endTime: string, minBidAmount?: number, maxBidAmount?: number) =>
+    api.post(`${API_BASE_URL}/bidding/sessions`, {
+      loadId,
+      startTime,
+      endTime,
+      minBidAmount,
+      maxBidAmount
+    }),
+
+  getBiddingSession: (sessionId: string) =>
+    api.get(`${API_BASE_URL}/bidding/sessions/${sessionId}`),
+
+  getBiddingSessionWithDetails: (sessionId: string) =>
+    api.get(`${API_BASE_URL}/bidding/sessions/${sessionId}/details`),
+
+  getBiddingSessionByLoad: (loadId: string) =>
+    api.get(`${API_BASE_URL}/bidding/sessions/load/${loadId}`),
+
+  updateBiddingSession: (sessionId: string, data: Partial<BiddingSession>) =>
+    api.patch(`${API_BASE_URL}/bidding/sessions/${sessionId}`, data),
+
+  closeBiddingSession: (sessionId: string) =>
+    api.patch(`${API_BASE_URL}/bidding/sessions/${sessionId}/close`),
+
+  // Bid Management
+  placeBid: (sessionId: string, vehicleId: string, bidAmount: number, message?: string) =>
+    api.post(`${API_BASE_URL}/bidding/bids`, {
+      biddingSessionId: sessionId,
+      vehicleId,
+      bidAmount,
+      message
+    }),
+
+  updateBid: (bidId: string, bidAmount: number, message?: string) =>
+    api.patch(`${API_BASE_URL}/bidding/bids/${bidId}`, {
+      bidAmount,
+      message
+    }),
+
+  withdrawBid: (bidId: string) =>
+    api.patch(`${API_BASE_URL}/bidding/bids/${bidId}/withdraw`),
+
+  getBidsForSession: (sessionId: string) =>
+    api.get(`${API_BASE_URL}/bidding/sessions/${sessionId}/bids`),
+
+  getMyBids: () =>
+    api.get(`${API_BASE_URL}/bidding/my-bids`),
+
+  selectWinningBid: (sessionId: string, bidId: string) =>
+    api.patch(`${API_BASE_URL}/bidding/sessions/${sessionId}/select-bid`, { bidId }),
+
+  // Accept bid and assign vehicle owner
+  acceptBidAndAssign: (bidId: string, message?: string) =>
+    api.post(`${API_BASE_URL}/bidding/bids/${bidId}/accept`, { message }),
+
+  // Start journey
+  startJourney: (loadId: string, vehicleId: string) =>
+    api.post(`${API_BASE_URL}/bidding/loads/${loadId}/start-journey`, { vehicleId }),
+
+  // Transport Request Management
+  sendTransportRequest: (bidId: string, message?: string) =>
+    api.post(`${API_BASE_URL}/bidding/transport-requests`, {
+      bidId,
+      message
+    }),
+
+  getTransportRequests: () =>
+    api.get(`${API_BASE_URL}/bidding/transport-requests`),
+
+  respondToTransportRequest: (requestId: string, status: 'accepted' | 'rejected') =>
+    api.patch(`${API_BASE_URL}/bidding/transport-requests/${requestId}/respond`, { status }),
+
+  // Active Bidding Sessions
+  getActiveBiddingSessions: () =>
+    api.get(`${API_BASE_URL}/bidding/sessions/active`),
+
+  // Vehicle Owner Profile
+  getVehicleOwnerProfile: (ownerId: string) =>
+    api.get(`${API_BASE_URL}/bidding/vehicle-owners/${ownerId}/profile`),
+
+  // Statistics
+  getBiddingStats: () =>
+    api.get(`${API_BASE_URL }/bidding/stats`)
+};
+=======
+>>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
 export default api;
