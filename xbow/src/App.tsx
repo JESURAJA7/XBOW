@@ -23,22 +23,17 @@ import { LoadMatchedVehiclesPage } from './screens/loadProvider/LoadMatchedVehic
 import { AdminLogin } from './Admin/auth/AdminLogin';
 import { AdminRegister } from './Admin/auth/AdminRegister';
 import { AdminProtectedRoute } from './Admin/auth/AdminProtectedRoute';
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
+
 import { BiddingModal } from './screens/Bidding/BiddingModal';
 import { LiveBiddingPage } from './screens/Bidding/LiveBiddingPage';
 import { AnimatedFooter } from './components/layout/AnimatedFooter';
 import { BiddingMonitorPage } from './screens/Bidding/BiddingMonitorPage';
-<<<<<<< HEAD
+
 import { LoadProgressPage } from './screens/Progress/LoadProgressPage';
 import { LoadProgressListPage } from './screens/Progress/LoadProgressListPage';
-=======
-=======
 
->>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
+
+
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
@@ -233,10 +228,7 @@ const AppContent: React.FC = () => {
           }
         />
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
+
           <Route
           path="/live-bidding"
           element={
@@ -246,7 +238,7 @@ const AppContent: React.FC = () => {
             </ProtectedRoute>
           }
         />
-<<<<<<< HEAD
+
         <Route
           path="/load-progress/:loadId?"
           element={
@@ -269,11 +261,7 @@ const AppContent: React.FC = () => {
         />
 
 
-=======
 
-=======
->>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
         {/* <Route
           path="/bidding"
           element={
@@ -293,10 +281,7 @@ const AppContent: React.FC = () => {
             <ProtectedRoute>
               <Navbar />
               <LoadMatchedVehiclesPage />
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
+
               <AnimatedFooter />
             </ProtectedRoute>
           }
@@ -307,11 +292,7 @@ const AppContent: React.FC = () => {
               <Navbar />
               <BiddingMonitorPage />
               <AnimatedFooter />
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
+
             </ProtectedRoute>
           }
         />

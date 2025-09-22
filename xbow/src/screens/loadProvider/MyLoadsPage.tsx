@@ -18,11 +18,7 @@ import {
   UserGroupIcon,
   StarIcon,
   ScaleIcon,
-<<<<<<< HEAD
 
-=======
- 
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
   HandRaisedIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
@@ -36,26 +32,12 @@ import { LoadTimeline } from '../../components/LoadTimeline';
 import { MessageModal } from '../../components/MessageModal';
 import { VehicleMatchingModal } from '../../components/vehicles/VehicleMatchingModal';
 import { RatingModal } from '../../components/Rating/RatingModal';
-<<<<<<< HEAD
 import { loadApplicationAPI } from '../../services/loadApplicationAPI';
-=======
-<<<<<<< HEAD
-import { loadApplicationAPI } from '../../services/loadApplicationAPI';
-=======
->>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
 import { vehicleMatchingAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 import { loadAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
-<<<<<<< HEAD
 import { CreateBiddingModal } from '../../components/Bidding/CreateBiddingModal';
-=======
-<<<<<<< HEAD
-import { CreateBiddingModal } from '../../components/Bidding/CreateBiddingModal';
-=======
->>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
 
 export const MyLoadsPage: React.FC = () => {
   const { user } = useAuth();
@@ -68,14 +50,7 @@ export const MyLoadsPage: React.FC = () => {
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [isVehicleMatchingModalOpen, setIsVehicleMatchingModalOpen] = useState(false);
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
-<<<<<<< HEAD
   const [isCreateBiddingModalOpen, setIsCreateBiddingModalOpen] = useState(false);
-=======
-<<<<<<< HEAD
-  const [isCreateBiddingModalOpen, setIsCreateBiddingModalOpen] = useState(false);
-=======
->>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
   const [applications, setApplications] = useState<any[]>([]);
   const [assignedVehicle, setAssignedVehicle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -95,11 +70,7 @@ export const MyLoadsPage: React.FC = () => {
     try {
       setLoading(true);
       const response = await loadAPI.getMyLoads();
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
       if (response.data.success) {
         setLoads(response.data.data);
       } else {
@@ -108,11 +79,7 @@ export const MyLoadsPage: React.FC = () => {
     } catch (error: any) {
       console.error('Error fetching loads:', error);
       toast.error(error.response?.data?.message || 'Failed to fetch loads');
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
       // Fallback to empty array if API fails
       setLoads([]);
     } finally {
@@ -128,11 +95,7 @@ export const MyLoadsPage: React.FC = () => {
       filtered = filtered.filter(load =>
         load.loadingLocation.place.toLowerCase().includes(searchTerm.toLowerCase()) ||
         load.unloadingLocation.place.toLowerCase().includes(searchTerm.toLowerCase()) ||
-<<<<<<< HEAD
         (load.materials && load.materials.some(material =>
-=======
-        (load.materials && load.materials.some(material => 
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
           material.name.toLowerCase().includes(searchTerm.toLowerCase())
         ))
       );
@@ -202,7 +165,6 @@ export const MyLoadsPage: React.FC = () => {
 
   const updateLoadStatus = async (loadId: string, newStatus: string) => {
     try {
-<<<<<<< HEAD
       const response = await loadApplicationAPI.updateLoadStatus(loadId, newStatus);
 
       if (response.data.success) {
@@ -214,23 +176,6 @@ export const MyLoadsPage: React.FC = () => {
           )
         );
 
-=======
-<<<<<<< HEAD
-      const response = await loadApplicationAPI.updateLoadStatus(loadId, newStatus);
-=======
-      const response = await loadAPI.updateLoadStatus(loadId, newStatus);
->>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
-      
-      if (response.data.success) {
-        toast.success('Load status updated successfully');
-        // Update the local state to reflect the change
-        setLoads(prevLoads => 
-          prevLoads.map(load => 
-            load._id === loadId ? { ...load, status: newStatus } : load
-          )
-        );
-        
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
         // Update selected load if it's the same
         if (selectedLoad?._id === loadId) {
           setSelectedLoad(prev => prev ? { ...prev, status: newStatus } : null);
@@ -246,22 +191,9 @@ export const MyLoadsPage: React.FC = () => {
 
   const fetchLoadApplications = async (loadId: string) => {
     try {
-<<<<<<< HEAD
       const response = await loadApplicationAPI.getLoadApplications(loadId);
       if (response.data.success) {
         setApplications(response.data.data);
-=======
-<<<<<<< HEAD
-      const response = await loadApplicationAPI.getLoadApplications(loadId);
-      if (response.data.success) {
-        setApplications(response.data.data);
-=======
-      const response = await loadAPI.getLoadApplications(loadId);
-      if (response.data.success) {
-        setApplications(response.data.data);
-        console.log('Fetched applications:', response.data.data);
->>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
       }
     } catch (error) {
       console.error('Error fetching applications:', error);
@@ -276,19 +208,9 @@ export const MyLoadsPage: React.FC = () => {
 
   const handleSendMessage = async (message: string) => {
     if (!selectedLoad) return;
-<<<<<<< HEAD
 
     try {
       await loadApplicationAPI.sendMessage(selectedLoad._id, message);
-=======
-    
-    try {
-<<<<<<< HEAD
-      await loadApplicationAPI.sendMessage(selectedLoad._id, message);
-=======
-      await loadAPI.sendMessage(selectedLoad._id, message);
->>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
       toast.success('Message sent successfully!');
     } catch (error: any) {
       console.error('Error sending message:', error);
@@ -304,11 +226,7 @@ export const MyLoadsPage: React.FC = () => {
     try {
       // This endpoint would need to be implemented in your backend
       const response = await loadAPI.deleteLoad(loadId);
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
       if (response.data.success) {
         toast.success('Load deleted successfully');
         // Remove the load from the local state
@@ -324,25 +242,15 @@ export const MyLoadsPage: React.FC = () => {
 
   const handleSelectVehicle = async (vehicleId: string, bidPrice: number) => {
     if (!selectedLoad) return;
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
     try {
       const response = await vehicleMatchingAPI.selectVehicle(selectedLoad._id, vehicleId, bidPrice);
       if (response.data.success) {
         toast.success('Vehicle selected successfully!');
         // Update the load status in local state
-<<<<<<< HEAD
         setLoads(prevLoads =>
           prevLoads.map(load =>
             load._id === selectedLoad._id
-=======
-        setLoads(prevLoads => 
-          prevLoads.map(load => 
-            load._id === selectedLoad._id 
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
               ? { ...load, status: 'assigned', assignedVehicleId: vehicleId }
               : load
           )
@@ -357,15 +265,7 @@ export const MyLoadsPage: React.FC = () => {
 
   const handleSendMessageToVehicle = async (vehicleId: string, message: string) => {
     try {
-<<<<<<< HEAD
       await vehicleMatchingAPI.sendMessage(vehicleId, message, selectedLoad?._id || '');
-=======
-<<<<<<< HEAD
-      await vehicleMatchingAPI.sendMessage(vehicleId, message , selectedLoad?._id || '');
-=======
-      await vehicleMatchingAPI.sendMessage(vehicleId, message, selectedLoad?._id || '');
->>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
       toast.success('Message sent successfully!');
     } catch (error: any) {
       console.error('Error sending message:', error);
@@ -501,11 +401,7 @@ export const MyLoadsPage: React.FC = () => {
             {filteredLoads.map((load, index) => {
               const StatusIcon = getStatusIcon(load.status);
               const totalWeight = load.materials?.reduce((sum, material) => sum + material.totalWeight, 0) || 0;
-<<<<<<< HEAD
 
-=======
-              
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
               return (
                 <motion.div
                   key={load._id}
@@ -570,7 +466,6 @@ export const MyLoadsPage: React.FC = () => {
                         <div className="flex items-center space-x-2 mb-2">
                           <TruckIcon className="h-4 w-4 text-blue-600" />
                           <span className="text-sm font-medium text-blue-800">Vehicle</span>
-<<<<<<< HEAD
                         </div>
                         <p className="text-sm text-blue-700">{load.vehicleRequirement.size}ft {load.vehicleRequirement.vehicleType}</p>
                       </div>
@@ -631,39 +526,6 @@ export const MyLoadsPage: React.FC = () => {
                           </div>
                         </div>
                       )}
-=======
-                        </div>
-                        <p className="text-sm text-blue-700">{load.vehicleRequirement.size}ft {load.vehicleRequirement.vehicleType}</p>
-                      </div>
-                      
-                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <ScaleIcon className="h-4 w-4 text-emerald-600" />
-                          <span className="text-sm font-medium text-emerald-800">Weight</span>
-                        </div>
-                        <p className="text-sm text-emerald-700">{totalWeight.toLocaleString()} kg</p>
-                      </div>
-                      
-                      <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <CalendarIcon className="h-4 w-4 text-orange-600" />
-                          <span className="text-sm font-medium text-orange-800">Loading</span>
-                        </div>
-                        <p className="text-sm text-orange-700">{new Date(load.loadingDate).toLocaleDateString()}</p>
-                      </div>
-                      
-                      <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <CurrencyRupeeIcon className="h-4 w-4 text-purple-600" />
-                          <span className="text-sm font-medium text-purple-800">Payment</span>
-                        </div>
-                        <p className="text-sm text-purple-700 uppercase">{load.paymentTerms}</p>
-                      </div>
-                    </div>
-
-                    {/* Materials Summary */}
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-slate-700">Materials</span>
                         <span className="text-sm text-slate-600">{load.materials?.length || 0} items</span>
@@ -683,10 +545,6 @@ export const MyLoadsPage: React.FC = () => {
                     {/* Actions */}
                     <div className="space-y-3">
                       {load.status === 'posted' && (
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
                         <>
                           <div className="space-y-2">
                             <Button
@@ -711,22 +569,6 @@ export const MyLoadsPage: React.FC = () => {
                               Find Matching Vehicles
                             </Button>
                           </div>
-<<<<<<< HEAD
-=======
-=======
-                        <div className="space-y-2">
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/load-matched-vehicles/${load._id}`);
-                            }}
-                            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-                            icon={<TruckIcon className="h-4 w-4" />}
-                          >
-                            Find Matching Vehicles
-                          </Button>
->>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -738,21 +580,10 @@ export const MyLoadsPage: React.FC = () => {
                           >
                             View Applications
                           </Button>
-<<<<<<< HEAD
                         </>
 
                       )}
 
-=======
-<<<<<<< HEAD
-                        </>
-                        
-=======
-                        </div>
->>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
-                      )}
-                      
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
                       <div className="grid grid-cols-3 gap-2">
                         <Button
                           onClick={(e) => {
@@ -794,21 +625,12 @@ export const MyLoadsPage: React.FC = () => {
                     </div>
                   </div>
                 </motion.div>
-<<<<<<< HEAD
 
               );
             })}
           </AnimatePresence>
 
 
-=======
-                
-              );
-            })}
-          </AnimatePresence>
-         
-        
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
         </motion.div>
 
         {/* Empty State */}
@@ -880,21 +702,13 @@ export const MyLoadsPage: React.FC = () => {
                               <p className="text-sm text-slate-500">PIN: {selectedLoad.loadingLocation.pincode}</p>
                             </div>
                           </div>
-<<<<<<< HEAD
 
-=======
-                          
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
                           <div className="flex flex-col items-center">
                             <div className="w-12 h-0.5 bg-slate-300 mb-2"></div>
                             <TruckIcon className="h-6 w-6 text-slate-400" />
                             <div className="w-12 h-0.5 bg-slate-300 mt-2"></div>
                           </div>
-<<<<<<< HEAD
 
-=======
-                          
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
                           <div className="flex-1 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
                             <div className="flex items-center space-x-2 mb-3">
                               <MapPinIcon className="h-5 w-5 text-emerald-600" />
@@ -907,11 +721,7 @@ export const MyLoadsPage: React.FC = () => {
                             </div>
                           </div>
                         </div>
-<<<<<<< HEAD
 
-=======
-                        
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
                         {/* Schedule */}
                         <div className="grid grid-cols-2 gap-4">
                           <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
@@ -922,11 +732,7 @@ export const MyLoadsPage: React.FC = () => {
                             <p className="text-lg font-semibold text-slate-900">{new Date(selectedLoad.loadingDate).toLocaleDateString()}</p>
                             <p className="text-sm text-slate-600">{selectedLoad.loadingTime}</p>
                           </div>
-<<<<<<< HEAD
 
-=======
-                          
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
                           <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
                             <div className="flex items-center space-x-2 mb-2">
                               <CurrencyRupeeIcon className="h-4 w-4 text-purple-600" />
@@ -953,11 +759,7 @@ export const MyLoadsPage: React.FC = () => {
                                 {material.totalWeight} kg
                               </span>
                             </div>
-<<<<<<< HEAD
 
-=======
-                            
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                               <div>
                                 <span className="text-slate-600">Dimensions:</span>
@@ -976,7 +778,6 @@ export const MyLoadsPage: React.FC = () => {
                                 <p className="font-medium">{material.singleWeight} kg</p>
                               </div>
                             </div>
-<<<<<<< HEAD
 
                             {/* Material Photos */}
                             {material.photos && material.photos.length > 0 && (
@@ -986,33 +787,6 @@ export const MyLoadsPage: React.FC = () => {
                                     <PhotoIcon className="h-4 w-4 mr-1" />
                                     Photos ({material.photos.length})
                                   </span>
-=======
-                            
-                            {/* Material Photos */}
-                            {material.photos && material.photos.length > 0 && (
-                              <div className="mt-4">
-                                <h5 className="font-medium text-slate-900 mb-3 flex items-center">
-                                  <PhotoIcon className="h-4 w-4 mr-2" />
-                                  Photos
-                                </h5>
-                                <div className="grid grid-cols-4 gap-3">
-                                  {material.photos.map((photo, photoIndex) => (
-                                    <div key={photoIndex} className="relative group">
-                                      <img
-                                        src={photo.url}
-<<<<<<< HEAD
-                                        alt={photo.publicId}
-=======
-                                        alt={photo.type}
->>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
-                                        className="w-full h-20 object-cover rounded-lg border border-slate-200 group-hover:opacity-80 transition-opacity cursor-pointer"
-                                      />
-                                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all rounded-lg flex items-center justify-center">
-                                        <EyeIcon className="text-white opacity-0 group-hover:opacity-100 transition-opacity h-5 w-5" />
-                                      </div>
-                                    </div>
-                                  ))}
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
                                   {material.photos.slice(0, 3).map((photo, index) => (
@@ -1090,11 +864,7 @@ export const MyLoadsPage: React.FC = () => {
                           icon={<HandRaisedIcon className="h-4 w-4" />}
                         >
                           View Applications
-<<<<<<< HEAD
                         </Button>
-=======
-                          </Button>
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
                         <Button
                           onClick={() => {
                             setIsModalOpen(false);
@@ -1125,11 +895,7 @@ export const MyLoadsPage: React.FC = () => {
                         >
                           Mark as Completed
                         </Button>
-<<<<<<< HEAD
 
-=======
-                        
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
                         {selectedLoad.status === 'completed' && (
                           <Button
                             onClick={() => {
@@ -1143,11 +909,7 @@ export const MyLoadsPage: React.FC = () => {
                             Rate Vehicle Owner
                           </Button>
                         )}
-<<<<<<< HEAD
 
-=======
-                        
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
                         {selectedLoad.status === 'completed' && (
                           <Button
                             onClick={() => {
@@ -1258,10 +1020,6 @@ export const MyLoadsPage: React.FC = () => {
             fetchLoads();
           }}
         />
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
 
         {/* Create Bidding Modal */}
         <CreateBiddingModal
@@ -1274,11 +1032,6 @@ export const MyLoadsPage: React.FC = () => {
             toast.success('Bidding session created! Vehicle owners can now place bids.');
           }}
         />
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
       </div>
     </div>
   );

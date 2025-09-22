@@ -13,15 +13,13 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../common/CustomButton';
-<<<<<<< HEAD
+
 import Logo from '../../assets/freeleft_logo.png';
-=======
-<<<<<<< HEAD
-import Logo from '../../assets/freeleft_logo.png';
-=======
-import Logo from '../../assets/WhatsApp Image 2025-09-08 at 00.16.58_e20dd409.jpg';
->>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
+
+
+
+
+
 
 export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -38,26 +36,25 @@ export const Navbar: React.FC = () => {
         // { name: 'Payments', href: '/payments' },
         { name: 'Bidding', href: '/bidding-info' },
         {name: 'Live Bidding', href: '/live-bidding'},
-<<<<<<< HEAD
+
         { name: 'Load Progress', href: '/load-progress-list' },
-=======
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
+
       ]
     : [
         { name: 'Dashboard', href: '/dashboard' },
         { name: 'Find Loads', href: '/find-loads' },
         { name: 'Add Vehicle', href: '/add-vehicle' },
         { name: 'My Vehicles', href: '/my-vehicles' },
-<<<<<<< HEAD
+
         // { name: 'Payments', href: '/payments' },
         { name: 'Bidding', href: '/bidding-info' },
         { name: 'Live Bidding', href: '/live-bidding' },
         { name: 'Vehicle Progress', href: '/load-progress-list' },
-=======
+
         { name: 'Payments', href: '/payments' },
         { name: 'Bidding', href: '/bidding-info' },
         { name: 'Live Bidding', href: '/live-bidding' },
->>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
+
       ];
 
   const handleLogout = () => {
