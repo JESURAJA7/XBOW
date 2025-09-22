@@ -8,7 +8,12 @@ import {
   TruckIcon,
   CurrencyRupeeIcon,
   CheckCircleIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  DocumentTextIcon,
+  BanknotesIcon,
+  CalendarDaysIcon,
+  ShieldCheckIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '../../components/common/CustomButton';
 
@@ -17,6 +22,7 @@ interface BiddingInfoProps {
 }
 
 type Language = 'english' | 'hindi' | 'telugu' | 'kannada' | 'malayalam' | 'tamil';
+type ViewMode = 'normal' | 'policy';
 
 interface LanguageOption {
   code: Language;
@@ -25,12 +31,12 @@ interface LanguageOption {
 }
 
 const languages: LanguageOption[] = [
+  { code: 'tamil', name: 'Tamil', nativeName: 'தமிழ்' },
   { code: 'english', name: 'English', nativeName: 'English' },
   { code: 'hindi', name: 'Hindi', nativeName: 'हिन्दी' },
   { code: 'telugu', name: 'Telugu', nativeName: 'తెలుగు' },
   { code: 'kannada', name: 'Kannada', nativeName: 'ಕನ್ನಡ' },
   { code: 'malayalam', name: 'Malayalam', nativeName: 'മലയാളം' },
-  { code: 'tamil', name: 'Tamil', nativeName: 'தமிழ்' }
 ];
 
 const content = {
@@ -192,9 +198,121 @@ const content = {
   }
 };
 
+const biddingPolicyContent = {
+  tamil: {
+    title: "பிட் கொள்கை (Bidding Policy)",
+    sections: [
+      {
+        title: "1. டெப்பாசிட் கட்டணம் (Deposit Payment)",
+        icon: <BanknotesIcon className="h-6 w-6" />,
+        content: [
+          "பிடிங்கில் (Bidding) பங்கேற்க, ரூ.5,000 திருப்பிச் செலுத்தக்கூடிய டெப்பாசிட் கட்டாயம் செலுத்தப்பட வேண்டும்.",
+          "இது வாகன உரிமையாளர்கள் (Vehicle Owners) மற்றும் வாகனம் தேவைப்படுவோர் (Load Providers) இருவருக்கும் பொருந்தும்."
+        ]
+      },
+      {
+        title: "2. பிட் அங்கீகாரம் / நிராகரம் (Bid Approval / Rejection)",
+        icon: <CheckCircleIcon className="h-6 w-6" />,
+        content: [
+          "வாகனம் தேவைப்படுவோர் (Load Provider):",
+          "• பிட் செய்து வாகனம் எடுத்தாலும், வாகனத்திற்கான தொகையில் இருந்து டெப்பாசிட் தொகையை கழிக்க இயலாது.",
+          "• பிட் செய்தும், வாகனம் கிடைக்கவில்லை என்றாலும், எந்தவித கட்டணமும் டெப்பாசிட் தொகையில் இருந்து கழிக்கப்படாது.",
+          "",
+          "வாகன உரிமையாளர்கள் (Vehicle Owners):",
+          "• பிட் செய்தும், அவர்களுடைய வாகனம் அங்கீகரிக்கப்படாத நிலையிலும், எந்தவித கட்டணமும் டெப்பாசிட் தொகையில் இருந்து எடுக்கப்படாது.",
+          "",
+          "• டெப்பாசிட் தொகை முழுமையாக Freeleft தளத்தில் பாதுகாப்பாக இருக்கும்.",
+          "• பங்கேற்பாளர் அடுத்தடுத்து தினசரி பிடிங்கில் கலந்து கொள்ள, இதே டெப்பாசிட் தொகை தொடர்ந்து பயன்படும்."
+        ]
+      },
+      {
+        title: "3. டெப்பாசிட் திருப்பிச் செலுத்தல் (Deposit Refund)",
+        icon: <CurrencyRupeeIcon className="h-6 w-6" />,
+        content: [
+          "வெட்டிங் (Withdrawal) தேவையான நிலையில், பங்கேற்பாளர் அதிகாரப்பூர்வமாக (Officially) இமெயில் மூலம் விண்ணப்பிக்க வேண்டும்.",
+          "விண்ணப்பம் அங்கீகரிக்கப்பட்ட பின், டெப்பாசிட் தொகை 3 வேலை நாட்களுக்குள் (72 மணி நேரத்தில்), RC புத்தக உரிமையாளர் அல்லது அந்த நிறுவனத்தின் பெயரில் உள்ள வங்கிக் கணக்கில் மட்டுமே வரவு வைக்கப்படும்.",
+          "Google Pay, UPI, அல்லது இதுபோன்ற முறைகள் மூலம் பணத்தை திருப்பி அனுப்ப இயலாது.",
+          "இந்த தொகையை வாகன வாடகை, வண்டி அட்வான்ஸ் அல்லது பிற செலவுகளுக்காக கழித்து பயன்படுத்த இயலாது."
+        ]
+      },
+      {
+        title: "4. டெப்பாசிட் திருப்பி பெற்ற பின் தகுதி (Eligibility After Refund)",
+        icon: <CalendarDaysIcon className="h-6 w-6" />,
+        content: [
+          "ஒருமுறை டெப்பாசிட் தொகை திருப்பிச் செலுத்தப்பட்ட பிறகு, அந்த நபர் அடுத்த 180 நாட்கள் பிடிங்கில் பங்கேற்க தகுதி இல்லை."
+        ]
+      },
+      {
+        title: "5. வாகன பங்கேற்பு விதிகள் (Vehicle Participation Rules)",
+        icon: <TruckIcon className="h-6 w-6" />,
+        content: [
+          "ஒவ்வொரு வாகன உரிமையாளரும் ரூ.5,000 டெப்பாசிட் செலுத்திய பின், அவரது அக்கவுண்டில் சேர்க்கப்பட்ட அனைத்து வாகனங்களும் பிடிங்கில் பங்கேற்க அனுமதிக்கப்படும்.",
+          "ஒரே நபர், ஒரே டெப்பாசிட் மூலம், மற்றவர்களின் வாகனங்களைப் பதிவு செய்து பிடிங்கில் கலந்து கொள்ள அனுமதிக்கப்படமாட்டார்."
+        ]
+      }
+    ]
+  },
+  english: {
+    title: "Bidding Policy",
+    sections: [
+      {
+        title: "1. Deposit Payment",
+        icon: <BanknotesIcon className="h-6 w-6" />,
+        content: [
+          "To participate in bidding, a refundable deposit of ₹5,000 must be paid.",
+          "This applies to both Vehicle Owners and Load Providers."
+        ]
+      },
+      {
+        title: "2. Bid Approval / Rejection",
+        icon: <CheckCircleIcon className="h-6 w-6" />,
+        content: [
+          "Load Providers:",
+          "• Even if a vehicle is taken through bidding, the deposit amount cannot be adjusted against the vehicle hire charges.",
+          "• If no vehicle is allotted after bidding, no deductions will be made from the deposit.",
+          "",
+          "Vehicle Owners:",
+          "• If a vehicle is not approved in the bidding process, no deductions will be made from the deposit.",
+          "",
+          "• The deposit will remain safely with the Freeleft platform.",
+          "• The same deposit will be valid for daily participation in future biddings."
+        ]
+      },
+      {
+        title: "3. Deposit Refund",
+        icon: <CurrencyRupeeIcon className="h-6 w-6" />,
+        content: [
+          "In case of withdrawal, participants must submit an official request via email.",
+          "Upon approval, the deposit will be refunded within 3 working days (72 hours) to the bank account of the RC book holder or the registered company account.",
+          "Refunds cannot be made via Google Pay, UPI, or similar methods — only through bank transfer.",
+          "The deposit cannot be adjusted towards vehicle rent, advance, or any other expenses."
+        ]
+      },
+      {
+        title: "4. Eligibility After Refund",
+        icon: <CalendarDaysIcon className="h-6 w-6" />,
+        content: [
+          "Once the deposit is refunded, the participant will not be eligible to participate in bidding for the next 180 days."
+        ]
+      },
+      {
+        title: "5. Vehicle Participation Rules",
+        icon: <TruckIcon className="h-6 w-6" />,
+        content: [
+          "After paying the ₹5,000 deposit, a vehicle owner can list all vehicles registered under their account for bidding.",
+          "A single deposit cannot be used to register or support vehicles belonging to other individuals."
+        ]
+      }
+    ]
+  }
+};
+
 export const BiddingInfo: React.FC<BiddingInfoProps> = ({ onBack }) => {
   const [selectedLanguage, setSelectedLanguage] = useState<Language>('english');
+  const [viewMode, setViewMode] = useState<ViewMode>('normal');
+  const [policyLanguage, setPolicyLanguage] = useState<'tamil' | 'english'>('english');
   const currentContent = content[selectedLanguage];
+  const currentPolicyContent = biddingPolicyContent[policyLanguage];
 
   const getStepIcon = (index: number) => {
     const icons = [
@@ -210,6 +328,177 @@ export const BiddingInfo: React.FC<BiddingInfoProps> = ({ onBack }) => {
     ];
     return icons[index] || <InformationCircleIcon className="h-5 w-5" />;
   };
+
+  const handlePolicyClick = (lang: 'tamil' | 'english') => {
+    setPolicyLanguage(lang);
+    setViewMode('policy');
+  };
+
+  const handleBackToNormal = () => {
+    setViewMode('normal');
+  };
+
+  if (viewMode === 'policy') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <Button
+                onClick={handleBackToNormal}
+                variant="ghost"
+                icon={<ArrowLeftIcon className="h-5 w-5" />}
+              >
+                Back to Info
+              </Button>
+              <div className="flex items-center space-x-2">
+                <DocumentTextIcon className="h-5 w-5 text-slate-600" />
+                <span className="text-sm font-medium text-slate-700">Policy Language</span>
+              </div>
+            </div>
+
+            {/* Policy Language Selection */}
+            <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 mb-8">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={() => setPolicyLanguage('tamil')}
+                  className={`px-6 py-3 rounded-xl border-2 transition-all duration-200 text-center ${
+                    policyLanguage === 'tamil'
+                      ? 'border-purple-500 bg-purple-50 text-purple-700'
+                      : 'border-slate-200 hover:border-purple-300 hover:bg-purple-25'
+                  }`}
+                >
+                  <div className="font-medium">Bidding Policy Tamil</div>
+                  <div className="text-xs text-slate-600 mt-1">பிட் கொள்கை</div>
+                </button>
+                <button
+                  onClick={() => setPolicyLanguage('english')}
+                  className={`px-6 py-3 rounded-xl border-2 transition-all duration-200 text-center ${
+                    policyLanguage === 'english'
+                      ? 'border-purple-500 bg-purple-50 text-purple-700'
+                      : 'border-slate-200 hover:border-purple-300 hover:bg-purple-25'
+                  }`}
+                >
+                  <div className="font-medium">Bidding Policy English</div>
+                  
+                </button>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Policy Content */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={policyLanguage}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden"
+            >
+              {/* Header Section */}
+              <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-8">
+                <div className="text-center">
+                  <DocumentTextIcon className="h-12 w-12 mx-auto mb-4 text-white opacity-90" />
+                  <h1 className="text-3xl font-bold mb-2">{currentPolicyContent.title}</h1>
+                  <p className="text-purple-100">Important Terms and Conditions</p>
+                </div>
+              </div>
+
+              {/* Policy Sections */}
+              <div className="p-8">
+                <div className="space-y-8">
+                  {currentPolicyContent.sections.map((section, sectionIndex) => (
+                    <motion.div
+                      key={sectionIndex}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: sectionIndex * 0.1 }}
+                      className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-2xl p-6 border border-slate-200"
+                    >
+                      <div className="flex items-start space-x-4 mb-4">
+                        <div className="flex-shrink-0 p-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl">
+                          {section.icon}
+                        </div>
+                        <h2 className="text-xl font-bold text-slate-900 leading-tight">
+                          {section.title}
+                        </h2>
+                      </div>
+                      
+                      <div className="ml-16 space-y-3">
+                        {section.content.map((item, itemIndex) => (
+                          <div key={itemIndex}>
+                            {item === "" ? (
+                              <div className="h-2"></div>
+                            ) : item.startsWith("•") ? (
+                              <div className="flex items-start space-x-3">
+                                <div className="flex-shrink-0 w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                                <p className="text-slate-700 leading-relaxed">{item.substring(2)}</p>
+                              </div>
+                            ) : item.includes(":") && !item.includes("(") ? (
+                              <p className="text-slate-800 font-semibold leading-relaxed">{item}</p>
+                            ) : (
+                              <p className="text-slate-700 leading-relaxed">{item}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Important Notice */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="mt-8 bg-gradient-to-r from-orange-50 to-red-50 border-l-4 border-orange-500 rounded-xl p-6"
+                >
+                  <div className="flex items-start space-x-4">
+                    <ExclamationTriangleIcon className="h-6 w-6 text-orange-600 flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="font-bold text-orange-800 mb-2">
+                        {policyLanguage === 'tamil' ? 'முக்கிய அறிவிப்பு' : 'Important Notice'}
+                      </h3>
+                      <p className="text-orange-700 leading-relaxed">
+                        {policyLanguage === 'tamil' 
+                          ? 'இந்த கொள்கை விதிமுறைகள் அனைத்து பங்கேற்பாளர்களுக்கும் பொருந்தும். இவற்றை ஒப்புக்கொண்ட பின்னரே பிடிங்கில் பங்கேற்கலாம்.'
+                          : 'These policy terms apply to all participants. You can participate in bidding only after agreeing to these terms.'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Contact Section */}
+                <div className="mt-8 bg-gradient-to-r from-emerald-50 to-blue-50 border border-emerald-200 rounded-xl p-6">
+                  <div className="text-center">
+                    <p className="text-slate-700 mb-2">
+                      {policyLanguage === 'tamil' ? 'மேலும் விவரங்களுக்கு,' : 'For more details,'}
+                    </p>
+                    <p className="font-bold text-slate-900 text-lg mb-1">
+                      {policyLanguage === 'tamil' ? 'நிர்வாகம்' : 'Admin'}
+                    </p>
+                    <p className="font-semibold text-emerald-700 text-lg mb-4">XBOW Logistics Pvt. Ltd.</p>
+                    
+                    <div className="flex items-center justify-center space-x-2 bg-green-100 text-green-700 px-4 py-3 rounded-xl border border-green-200">
+                      <PhoneIcon className="h-5 w-5" />
+                      <span className="font-medium">WhatsApp: 9176622222</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50">
@@ -229,8 +518,28 @@ export const BiddingInfo: React.FC<BiddingInfoProps> = ({ onBack }) => {
               Back
             </Button>
             <div className="flex items-center space-x-2">
-              <GlobeAltIcon className="h-5 w-5 text-slate-600" />
-              <span className="text-sm font-medium text-slate-700">Select Language</span>
+              <DocumentTextIcon className="h-5 w-5 text-slate-600" />
+              <span className="text-sm font-medium text-slate-700">Bidding Policy</span>
+            </div>
+          </div>
+
+          {/* Policy Buttons */}
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => handlePolicyClick('tamil')}
+                className="px-6 py-4 rounded-xl border-2 border-slate-200 hover:border-emerald-300 hover:bg-emerald-25 transition-all duration-200 text-center group"
+              >
+                <div className="font-medium group-hover:text-emerald-700">Bidding Policy Tamil</div>
+                <div className="text-xs text-slate-600 mt-1 group-hover:text-emerald-600">பிட் கொள்கை</div>
+              </button>
+              <button
+                onClick={() => handlePolicyClick('english')}
+                className="px-6 py-4 rounded-xl border-2 border-slate-200 hover:border-emerald-300 hover:bg-emerald-25 transition-all duration-200 text-center group"
+              >
+                <div className="font-medium group-hover:text-emerald-700">Bidding Policy English</div>
+               
+              </button>
             </div>
           </div>
 

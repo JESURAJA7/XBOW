@@ -80,7 +80,7 @@ operatingAreas: [
   }],
   status: {
     type: String,
-    enum: ['available', 'assigned', 'in_transit'],
+    enum: ['available', 'assigned', 'in_transit', 'delivered', 'unavailable', 'maintenance', 'completed'],
     default: 'available'
   },
   isApproved: {

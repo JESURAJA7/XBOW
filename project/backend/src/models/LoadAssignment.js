@@ -5,7 +5,7 @@ const loadAssignmentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Load',
     required: true,
-    unique: true // One assignment per load
+    
   },
   vehicleId: {
     type: mongoose.Schema.Types.ObjectId,

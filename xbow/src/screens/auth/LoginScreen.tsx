@@ -159,7 +159,7 @@ export const LoginPage: React.FC = () => {
           </form>
 
           <div className="mt-6">
-            <Button
+            {/* <Button
               onClick={() => setShowDemoModal(true)}
               fullWidth
               variant="outline"
@@ -167,7 +167,7 @@ export const LoginPage: React.FC = () => {
               className="bg-blue-50 text-blue-600 hover:bg-blue-100"
             >
               Use Demo Account
-            </Button>
+            </Button> */}
           </div>
 
           <div className="mt-8 text-center">

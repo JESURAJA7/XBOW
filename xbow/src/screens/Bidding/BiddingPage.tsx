@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
 import {
   Clock,
   Truck,
@@ -17,6 +20,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSocket } from '../../hooks/useSocket';
 import { biddingAPI, loadAPI, vehicleAPI } from '../../services/api';
 import type { Load, BiddingSession, Bid, Vehicle } from '../../types';
+<<<<<<< HEAD
+=======
 =======
 import { 
   ArrowLeftIcon,
@@ -38,11 +43,15 @@ import {
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import type { Vehicle, Load } from '../../types/index';
 >>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
 import { Button } from '../../components/common/CustomButton';
 import { Input } from '../../components/common/CustomInput';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { Modal } from '../../components/common/Modal';
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
 import toast from 'react-hot-toast';
 
 export const BiddingPage: React.FC = () => {
@@ -137,6 +146,8 @@ export const BiddingPage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching bidding data:', error);
       toast.error('Failed to load bidding information');
+<<<<<<< HEAD
+=======
 =======
 import { MessageModal } from '../../components/MessageModal';
 import toast from 'react-hot-toast';
@@ -277,12 +288,16 @@ export const BiddingPage: React.FC<BiddingPageProps> = ({
       // ];
       // setVehicles(mockVehicles);
 >>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
     } finally {
       setLoading(false);
     }
   };
 
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
   const handleNewBid = useCallback((newBid: Bid) => {
     setBids(prev => {
       const existingIndex = prev.findIndex(bid => bid._id === newBid._id);
@@ -295,6 +310,16 @@ export const BiddingPage: React.FC<BiddingPageProps> = ({
       }
     });
   }, []);
+<<<<<<< HEAD
+
+  const handleBiddingClosed = useCallback((sessionId: string) => {
+    if (biddingSession?._id === sessionId) {
+      setBiddingSession(prev => prev ? { ...prev, status: 'closed' } : null);
+      toast('Bidding session has ended');
+    }
+  }, [biddingSession]);
+
+=======
 =======
   const sortVehicles = (vehicles: MatchedVehicle[], sortType: string) => {
     return [...vehicles].sort((a, b) => {
@@ -338,6 +363,7 @@ export const BiddingPage: React.FC<BiddingPageProps> = ({
     }
   }, [biddingSession]);
 
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
   const handlePlaceBid = async () => {
     if (!biddingSession || !selectedVehicle || !bidAmount) {
       toast.error('Please select a vehicle and enter bid amount');
@@ -369,6 +395,9 @@ export const BiddingPage: React.FC<BiddingPageProps> = ({
   };
 
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
   const handleSendTransportRequest = async () => {
     if (!selectedBid) return;
 
@@ -415,6 +444,8 @@ export const BiddingPage: React.FC<BiddingPageProps> = ({
   const getMyBid = () => {
     return bids.find(bid => bid.vehicleOwnerId === user?.id);
   };
+<<<<<<< HEAD
+=======
 =======
   const handleContactOwner = (vehicle: MatchedVehicle) => {
     setSelectedVehicle(vehicle);
@@ -428,6 +459,7 @@ export const BiddingPage: React.FC<BiddingPageProps> = ({
 
   const processedVehicles = filterVehicles(sortVehicles(vehicles, sortBy));
 >>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
 
   if (loading) {
     return (
@@ -462,6 +494,9 @@ export const BiddingPage: React.FC<BiddingPageProps> = ({
         >
           <div className="flex items-center justify-between">
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
             <div>
               <h1 className="text-3xl font-bold text-slate-900 mb-2">Live Bidding</h1>
               <p className="text-slate-600">
@@ -474,6 +509,12 @@ export const BiddingPage: React.FC<BiddingPageProps> = ({
             >
               Back to Marketplace
             </Button>
+<<<<<<< HEAD
+          </div>
+        </motion.div>
+
+        {/* Bidding Status & Timer */}
+=======
           </div>
         </motion.div>
 
@@ -499,11 +540,15 @@ export const BiddingPage: React.FC<BiddingPageProps> = ({
 
         {/* Filters & Controls */}
 >>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
           className={`rounded-2xl shadow-lg border p-6 mb-8 ${biddingSession.status === 'active'
               ? 'bg-gradient-to-r from-green-500 to-green-600 text-white'
               : 'bg-gradient-to-r from-red-500 to-red-600 text-white'
@@ -562,6 +607,16 @@ export const BiddingPage: React.FC<BiddingPageProps> = ({
                       <span className="font-semibold text-slate-900">{load.loadingLocation.place}</span>
                     </div>
                     <p className="text-sm text-slate-600">{load.loadingLocation.state}</p>
+<<<<<<< HEAD
+                  </div>
+                  <Truck className="h-5 w-5 text-slate-400" />
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <MapPin className="h-4 w-4 text-emerald-600" />
+                      <span className="font-semibold text-slate-900">{load.unloadingLocation.place}</span>
+                    </div>
+                    <p className="text-sm text-slate-600">{load.unloadingLocation.state}</p>
+=======
                   </div>
                   <Truck className="h-5 w-5 text-slate-400" />
                   <div className="flex-1">
@@ -1112,6 +1167,7 @@ export const BiddingPage: React.FC<BiddingPageProps> = ({
                       Book Vehicle
                     </Button>
 >>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
                   </div>
                 </div>
               </div>

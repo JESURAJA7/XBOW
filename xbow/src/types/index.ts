@@ -347,6 +347,9 @@ export interface Rating {
 }
 
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
 export interface BiddingSession {
   _id: string;
   loadId: Load;
@@ -394,8 +397,11 @@ export interface TransportRequest {
 }
 
 
+<<<<<<< HEAD
+=======
 =======
 >>>>>>> 1667499bf92cea8b02211dbceb461822a9ce5ec0
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
 export interface Message {
   _id: string;
   fromUserId: string;

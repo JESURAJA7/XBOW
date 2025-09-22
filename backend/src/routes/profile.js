@@ -4,7 +4,8 @@ import {
   getProfile,
   updateProfile,
   uploadDocuments,
-  getProfileCompletionStatus
+  getProfileCompletionStatus,
+  uploadImage
 } from '../controllers/profileController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -16,5 +17,7 @@ router.get('/', getProfile);
 router.put('/', updateProfile);
 router.post('/documents', uploadDocuments);
 router.get('/completion-status', getProfileCompletionStatus);
+router.post('/image', uploadImage);
+
 
 export default router;

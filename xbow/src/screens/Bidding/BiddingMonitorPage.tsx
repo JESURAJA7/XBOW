@@ -42,6 +42,10 @@ import { Button } from '../../components/common/CustomButton';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { Modal } from '../../components/common/Modal';
 import toast from 'react-hot-toast';
+<<<<<<< HEAD
+import { s } from 'framer-motion/client';
+=======
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
 
 interface VehicleOwnerProfile {
   _id: string;
@@ -193,9 +197,14 @@ export const BiddingMonitorPage: React.FC = () => {
         acceptMessage.trim() || undefined
       );
 
+<<<<<<< HEAD
+      toast.success('Vehicle owner selected and transport request sent successfully!');
+      await biddingAPI.closeBiddingSession(sessionId!);
+=======
        await biddingAPI.closeBiddingSession(sessionId!);
 
       toast.success('Vehicle owner selected and transport request sent successfully!');
+>>>>>>> 17500d54e634740c8c7d5455bf576f6c41b42ed1
       setIsAcceptModalOpen(false);
       setSelectedBidForAction(null);
       setAcceptMessage('');

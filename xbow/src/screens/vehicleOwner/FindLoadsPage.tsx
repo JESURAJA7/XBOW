@@ -456,6 +456,7 @@ export const FindLoadsPage: React.FC = () => {
                   <div className="p-6">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
+
                       <div className="flex items-center space-x-2">
                         <div className="h-3 w-3 bg-green-500 rounded-full animate-pulse"></div>
                         <span className="text-sm font-medium text-slate-600">Available</span>
@@ -474,11 +475,35 @@ export const FindLoadsPage: React.FC = () => {
                       </div>
                     </div>
 
+
                     {/* Load Provider */}
                     <div className="mb-4">
                       <h3 className="font-semibold text-slate-900 mb-1">{load.loadProviderName}</h3>
                       <p className="text-sm text-slate-600">Load Provider</p>
                     </div>
+                    {/* Material Photo Preview */}
+                    {load.photos && load.photos.length > 0 && (
+                      <div className="mb-4">
+                        <div className="grid grid-cols-3 gap-2">
+                          {load.photos.slice(0, 3).map((photo, index) => (
+                            <div key={index} className="relative aspect-square bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+                              <img
+                                src={photo.url}
+                                alt={`Material photo ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              {index === 2 && load.photos.length > 3 && (
+                                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                  <span className="text-white text-xs font-medium">
+                                    +{load.photos.length - 3}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Route */}
                     <div className="mb-4">

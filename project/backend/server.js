@@ -20,6 +20,7 @@ import podRoutes from './src/routes/pods.js';
 import profileRoutes from './src/routes/profile.js';
 import subscriptionRoutes from './src/routes/subscription.js';
 import biddingRoutes from './src/routes/biddingRoutes.js';
+import loadAssignmentRoutes from './src/routes/loadAssignmentRoutes.js';
 
 dotenv.config();
 
@@ -94,6 +95,7 @@ app.use('/api/pods', podRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/bidding', biddingRoutes);
+app.use('/api/load-assignments', loadAssignmentRoutes);
 
 // ✅ Health check
 app.get('/api/health', (req, res) => {

@@ -6,7 +6,10 @@ import {
   DocumentTextIcon,
   BuildingOfficeIcon,
   UserIcon,
-  BanknotesIcon
+  BanknotesIcon,
+  TruckIcon,
+  PhotoIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../common/CustomButton';
@@ -20,12 +23,24 @@ interface ProfileCompletionStatus {
   missingFields: string[];
 }
 
+interface ImageUpload {
+  file: File;
+  preview: string;
+  uploading: boolean;
+  uploaded?: {
+    url: string;
+    public_id: string;
+  };
+}
+
 export const ProfileCompletion: React.FC = () => {
   const { user, refreshUser } = useAuth();
   const [completionStatus, setCompletionStatus] = useState<ProfileCompletionStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [formData, setFormData] = useState<any>({});
+  const [vehicleOwnerType, setVehicleOwnerType] = useState<'owner' | 'owner_with_driver'>('owner');
+  const [imageUploads, setImageUploads] = useState<{[key: string]: ImageUpload}>({});
 
   useEffect(() => {
     fetchCompletionStatus();
@@ -56,12 +71,95 @@ export const ProfileCompletion: React.FC = () => {
     }
   };
 
+  const handleImageUpload = async (field: string, file: File) => {
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file');
+      return;
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+
+    const preview = URL.createObjectURL(file);
+    
+    setImageUploads(prev => ({
+      ...prev,
+      [field]: {
+        file,
+        preview,
+        uploading: true
+      }
+    }));
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('folder', 'profile_documents');
+
+      const response = await profileAPI.uploadImage(formData);
+      
+      if (response.data.success) {
+        setImageUploads(prev => ({
+          ...prev,
+          [field]: {
+            ...prev[field],
+            uploading: false,
+            uploaded: response.data.data
+          }
+        }));
+        toast.success('Image uploaded successfully');
+      }
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      toast.error(error.response?.data?.message || 'Failed to upload image');
+      
+      setImageUploads(prev => {
+        const updated = { ...prev };
+        delete updated[field];
+        return updated;
+      });
+    }
+  };
+
+  const removeImage = (field: string) => {
+    if (imageUploads[field]?.preview) {
+      URL.revokeObjectURL(imageUploads[field].preview);
+    }
+    
+    setImageUploads(prev => {
+      const updated = { ...prev };
+      delete updated[field];
+      return updated;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setUpdating(true);
 
     try {
-      const response = await profileAPI.updateProfile(formData);
+      // Prepare form data with uploaded images
+      const submitData = { ...formData };
+      
+      if (user?.role === 'vehicle_owner') {
+        submitData.ownerType = vehicleOwnerType;
+        submitData.documents = {};
+        
+        // Add uploaded images to form data
+        Object.keys(imageUploads).forEach(field => {
+          if (imageUploads[field].uploaded) {
+            submitData.documents[field] = imageUploads[field].uploaded;
+          }
+        });
+      }
+
+      const response = await profileAPI.updateProfile(submitData);
       if (response.data.success) {
         toast.success('Profile updated successfully!');
         await refreshUser();
@@ -89,6 +187,83 @@ export const ProfileCompletion: React.FC = () => {
         [field]: value
       }
     }));
+  };
+
+  const ImageUploadField: React.FC<{
+    field: string;
+    label: string;
+    required?: boolean;
+  }> = ({ field, label, required = false }) => {
+    const upload = imageUploads[field];
+    
+    return (
+      <div>
+        <label className="block text-sm font-semibold text-slate-700 mb-2">
+          {label} {required && '*'}
+        </label>
+        
+        {!upload ? (
+          <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-slate-400 transition-colors">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleImageUpload(field, file);
+              }}
+              className="hidden"
+              id={`upload-${field}`}
+            />
+            <label
+              htmlFor={`upload-${field}`}
+              className="cursor-pointer flex flex-col items-center space-y-2"
+            >
+              <PhotoIcon className="h-8 w-8 text-slate-400" />
+              <span className="text-sm text-slate-600">Click to upload image</span>
+              <span className="text-xs text-slate-500">PNG, JPG up to 5MB</span>
+            </label>
+          </div>
+        ) : (
+          <div className="relative">
+            <div className="border-2 border-slate-200 rounded-xl p-4">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <img
+                    src={upload.preview}
+                    alt={label}
+                    className="h-20 w-20 object-cover rounded-lg"
+                  />
+                  {upload.uploading && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
+                      <LoadingSpinner size="sm" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-slate-900">{upload.file.name}</p>
+                  <p className="text-sm text-slate-600">
+                    {(upload.file.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                  {upload.uploading && (
+                    <p className="text-sm text-blue-600">Uploading...</p>
+                  )}
+                  {upload.uploaded && (
+                    <p className="text-sm text-green-600">✓ Uploaded successfully</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeImage(field)}
+                  className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (loading) {
@@ -223,7 +398,7 @@ export const ProfileCompletion: React.FC = () => {
                       onChange={(value) => updateNestedFormData('businessDetails', 'gstNumber', value)}
                     />
                     <Input
-                      label="PAN Number (Optional)"
+                      label="PAN Number"
                       value={formData.businessDetails?.panNumber || ''}
                       onChange={(value) => updateNestedFormData('businessDetails', 'panNumber', value)}
                       required
@@ -233,6 +408,56 @@ export const ProfileCompletion: React.FC = () => {
               </>
             ) : (
               <>
+                {/* Vehicle Owner Type Selection */}
+                <div>
+                  <div className="flex items-center space-x-3 mb-6">
+                    <TruckIcon className="h-6 w-6 text-emerald-600" />
+                    <h3 className="text-xl font-semibold text-slate-900">Owner Type</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setVehicleOwnerType('owner')}
+                      className={`border-2 rounded-xl p-6 cursor-pointer transition-all ${
+                        vehicleOwnerType === 'owner'
+                          ? 'border-emerald-500 bg-emerald-50'
+                          : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="text-center">
+                        <UserIcon className="h-8 w-8 mx-auto mb-3 text-emerald-600" />
+                        <h4 className="font-semibold text-slate-900 mb-2">Owner</h4>
+                        <p className="text-sm text-slate-600">
+                          I am the owner and I drive the vehicle myself
+                        </p>
+                      </div>
+                    </motion.div>
+
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setVehicleOwnerType('owner_with_driver')}
+                      className={`border-2 rounded-xl p-6 cursor-pointer transition-all ${
+                        vehicleOwnerType === 'owner_with_driver'
+                          ? 'border-emerald-500 bg-emerald-50'
+                          : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="text-center">
+                        <div className="flex justify-center space-x-1 mb-3">
+                          <UserIcon className="h-6 w-6 text-emerald-600" />
+                          <UserIcon className="h-6 w-6 text-emerald-600" />
+                        </div>
+                        <h4 className="font-semibold text-slate-900 mb-2">Owner with Driver</h4>
+                        <p className="text-sm text-slate-600">
+                          I am the owner but I have a separate driver
+                        </p>
+                      </div>
+                    </motion.div>
+                  </div>
+                </div>
+
                 {/* Address Information */}
                 <div>
                   <div className="flex items-center space-x-3 mb-6">
@@ -272,6 +497,60 @@ export const ProfileCompletion: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Owner Documents */}
+                <div>
+                  <div className="flex items-center space-x-3 mb-6">
+                    <DocumentTextIcon className="h-6 w-6 text-emerald-600" />
+                    <h3 className="text-xl font-semibold text-slate-900">
+                      {vehicleOwnerType === 'owner' ? 'Your Documents' : 'Owner Documents'}
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <ImageUploadField
+                      field="ownerAadharFront"
+                      label="Aadhar Card (Front)"
+                      required
+                    />
+                    <ImageUploadField
+                      field="ownerAadharBack"
+                      label="Aadhar Card (Back)"
+                      required
+                    />
+                    <ImageUploadField
+                      field="ownerLicense"
+                      label="Driving License"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Driver Documents (only if owner with driver) */}
+                {vehicleOwnerType === 'owner_with_driver' && (
+                  <div>
+                    <div className="flex items-center space-x-3 mb-6">
+                      <DocumentTextIcon className="h-6 w-6 text-blue-600" />
+                      <h3 className="text-xl font-semibold text-slate-900">Driver Documents</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <ImageUploadField
+                        field="driverAadharFront"
+                        label="Driver Aadhar Card (Front)"
+                        required
+                      />
+                      <ImageUploadField
+                        field="driverAadharBack"
+                        label="Driver Aadhar Card (Back)"
+                        required
+                      />
+                      <ImageUploadField
+                        field="driverLicense"
+                        label="Driver License"
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* License Information */}
                 <div>
                   <div className="flex items-center space-x-3 mb-6">
@@ -303,6 +582,7 @@ export const ProfileCompletion: React.FC = () => {
                 loading={updating}
                 size="lg"
                 className="px-8"
+                disabled={Object.values(imageUploads).some(upload => upload.uploading)}
               >
                 Complete Profile
               </Button>

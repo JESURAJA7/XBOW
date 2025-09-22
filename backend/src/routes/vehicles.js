@@ -48,7 +48,7 @@ router.get('/vehicle-matching/load/:loadId/vehicles',protect, getMatchingVehicle
 router.post('/apply',protect, applyForLoad);
 router.get('/load/:loadId/applications',protect, getLoadApplications);
 router.patch('/application/:applicationId/respond',protect, respondToApplication);
-router.get('/my-applications',protect, getMyApplications);
+router.get('/my-applications',protect, authorize("vehicle_owner"), getMyApplications);
 
 // Assignment management
 router.patch('/assignment/:assignmentId/status', updateAssignmentStatus);
