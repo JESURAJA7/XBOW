@@ -81,5 +81,46 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
+userSchema.methods.checkProfileCompletion = function () {
+  let completedFields = 0;
+  let totalFields = 0;
+
+  // Example checks (tweak depending on required profile fields):
+  if (this.name) { completedFields++; }
+  totalFields++;
+
+  if (this.email) { completedFields++; }
+  totalFields++;
+
+  if (this.address?.city && this.address?.state && this.address?.pincode) {
+    completedFields++;
+  }
+  totalFields++;
+
+  if (this.role === "load_provider") {
+    if (this.businessDetails?.companyName && this.businessDetails?.gstNumber) {
+      completedFields++;
+    }
+    totalFields++;
+  }
+
+  if (this.role === "vehicle_owner") {
+    if (this.licenseNumber && this.licenseExpiry) {
+      completedFields++;
+    }
+    totalFields++;
+  }
+
+  // mark in schema
+  this.isProfileComplete = completedFields >= totalFields;
+
+  return {
+    completedFields,
+    totalFields,
+    percentage: totalFields > 0 ? Math.round((completedFields / totalFields) * 100) : 0,
+    isProfileComplete: this.isProfileComplete,
+  };
+};
+
 const User = mongoose.model('User', userSchema);
 export default User;
